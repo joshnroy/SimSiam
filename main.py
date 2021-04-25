@@ -68,7 +68,7 @@ def main(device, args):
 
     memory_loader = torch.utils.data.DataLoader(
         dataset=get_dataset(
-            transform=get_aug(train=False, train_classifier=False, **args.aug_kwargs), 
+            transform=get_aug(train=False, train_classifier=True, **args.aug_kwargs), 
             train=True,
             **args.dataset_kwargs),
         shuffle=True,
@@ -90,8 +90,8 @@ def main(device, args):
     model = get_model(args.model).to(device)
     model = torch.nn.DataParallel(model)
 
-    if args.wandb:
-        wandb.watch(model)
+    # if args.wandb:
+    #     wandb.watch(model)
 
     # define optimizer
     optimizer = get_optimizer(
