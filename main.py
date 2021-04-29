@@ -86,6 +86,16 @@ def main(device, args):
         **args.dataloader_kwargs
     )
 
+    cifar_test_loader = torch.utils.data.DataLoader(
+        dataset=get_dataset( 
+            transform=get_aug(train=False, train_classifier=False, **args.aug_kwargs), 
+            train=False,
+            **args.dataset_kwargs),
+        shuffle=False,
+        batch_size=args.train.batch_size,
+        **args.dataloader_kwargs
+    )
+
     # define model
     model = get_model(args.model).to(device)
     model = torch.nn.DataParallel(model)
@@ -113,7 +123,7 @@ def main(device, args):
     # Start training
     if args.train.knn_monitor: 
         train_accuracy = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
-        test_accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
+        test_accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset), hide_progress=args.hide_progress))
         print("before training (train, test) accuracy", train_accuracy, test_accuracy)
     
     train_accuracy = 0.
@@ -154,9 +164,9 @@ def main(device, args):
             train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
             test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
         if args.linear_monitor and epoch % args.train.knn_interval == 0:
-            train_accuracy, test_accuracy, train_features, test_features = linear_eval(args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
+            train_accuracy, test_accuracy, train_features, test_features, cifar_test_accuracy = linear_eval(args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone, test_loader2=cifar_test_loader)
         
-        epoch_dict = {"epoch": epoch, "train_accuracy": train_accuracy, "test_accuracy": test_accuracy, "batch_loss": batch_loss / batch_updates, "train_feature_std": torch.std(train_features, dim=0).mean().item(), "test_feature_std": torch.std(test_features, dim=0).mean().item()}
+        epoch_dict = {"Epoch": epoch, "Train Accuracy": train_accuracy, "Test Accuracy": test_accuracy, "Cifar Test Accuracy": cifar_test_accuracy, "Loss": batch_loss / batch_updates, "Train Feature Standard Deviation": torch.std(train_features, dim=0).mean().item(), "Test Feature Standard Deviation": torch.std(test_features, dim=0).mean().item()}
         if args.wandb:
             wandb.log(epoch_dict)
 
