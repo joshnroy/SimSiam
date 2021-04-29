@@ -182,7 +182,7 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
         correct, total = 0, 0
         acc_meter.reset()
         test2_features = []
-        for idx, x in enumerate(test2_loader):
+        for idx, x in enumerate(test_loader2):
             images = x[0]
             labels = x[-1]
             with torch.no_grad():

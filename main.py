@@ -19,6 +19,7 @@ import wandb
 import pandas as pd
 import cv2
 import imageio
+from copy import deepcopy
 
 def save_images(imgs, labels, name, fps=2):
     print("WRITING SAMPLE IMAGES")
@@ -43,6 +44,9 @@ def save_images(imgs, labels, name, fps=2):
     
 
 def main(device, args):
+    cifar_args = deepcopy(args)
+    cifar_args.eval.num_classes = 10
+    cifar_args.dataset_kwargs['dataset'] = 'cifar10'
 
     if args.no_augmentation:
         print("NO AUGMENTATION IID", flush=True)
@@ -86,14 +90,25 @@ def main(device, args):
         **args.dataloader_kwargs
     )
 
+    cifar_dataset_kwargs = cifar_args.dataloader_kwargs
+    cifar_memory_loader = torch.utils.data.DataLoader(
+        dataset=get_dataset(
+            transform=get_aug(train=False, train_classifier=True, **args.aug_kwargs), 
+            train=True,
+            **cifar_args.dataset_kwargs),
+        shuffle=True,
+        batch_size=args.train.batch_size,
+        **cifar_args.dataloader_kwargs
+    )
+
     cifar_test_loader = torch.utils.data.DataLoader(
         dataset=get_dataset( 
             transform=get_aug(train=False, train_classifier=False, **args.aug_kwargs), 
             train=False,
-            **args.dataset_kwargs),
+            **cifar_args.dataset_kwargs),
         shuffle=False,
         batch_size=args.train.batch_size,
-        **args.dataloader_kwargs
+        **cifar_args.dataloader_kwargs
     )
 
     # define model
@@ -164,9 +179,11 @@ def main(device, args):
             train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
             test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
         if args.linear_monitor and epoch % args.train.knn_interval == 0:
-            train_accuracy, test_accuracy, train_features, test_features, cifar_test_accuracy = linear_eval(args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone, test_loader2=cifar_test_loader)
+            train_accuracy, test_accuracy, train_features, test_features = linear_eval(args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
+
+            cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
         
-        epoch_dict = {"Epoch": epoch, "Train Accuracy": train_accuracy, "Test Accuracy": test_accuracy, "Cifar Test Accuracy": cifar_test_accuracy, "Loss": batch_loss / batch_updates, "Train Feature Standard Deviation": torch.std(train_features, dim=0).mean().item(), "Test Feature Standard Deviation": torch.std(test_features, dim=0).mean().item()}
+        epoch_dict = {"Epoch": epoch, "Train Accuracy": train_accuracy, "Test Accuracy": test_accuracy, "Cifar Train Accuracy": cifar_train_accuracy, "Cifar Test Accuracy": cifar_test_accuracy, "Loss": batch_loss / batch_updates, "Train Feature Standard Deviation": torch.std(train_features, dim=0).mean().item(), "Test Feature Standard Deviation": torch.std(test_features, dim=0).mean().item()}
         if args.wandb:
             wandb.log(epoch_dict)
 
