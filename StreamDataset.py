@@ -141,7 +141,7 @@ class StreamDataset(data.Dataset):
 
         if self.preload:
             self.loaded_images = {}
-            print("LOADING DATASET")
+            print("LOADING DATASET", flush=True)
             for index in trange(len(self.samples)):
                 sample, target = self.get_item(index)
                 self.loaded_images[index] = (sample, target)

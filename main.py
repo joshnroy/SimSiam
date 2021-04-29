@@ -90,8 +90,8 @@ def main(device, args):
     model = get_model(args.model).to(device)
     model = torch.nn.DataParallel(model)
 
-    if args.wandb:
-        wandb.watch(model)
+    # if args.wandb:
+    #     wandb.watch(model)
 
     # define optimizer
     optimizer = get_optimizer(

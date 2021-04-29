@@ -60,6 +60,7 @@ def get_args():
     parser.add_argument('--small_dataset', action='store_true')
     parser.add_argument('--linear_monitor', action='store_true', default=True)
     parser.add_argument('--preload_dataset', action='store_true')
+    parser.add_argument('--resolution', type=int, default=32)
     args = parser.parse_args()
 
 
@@ -92,7 +93,7 @@ def get_args():
 
     vars(args)['aug_kwargs'] = {
         'name':args.model.name,
-        'image_size': args.dataset.image_size
+        'image_size': args.resolution
     }
     vars(args)['dataset_kwargs'] = {
         'dataset':args.dataset.name,
@@ -101,7 +102,7 @@ def get_args():
         'debug_subset_size': args.debug_subset_size if args.debug else None,
         'small_dataset': args.small_dataset,
         'temporal_jitter_range': args.temporal_jitter_range,
-        'preload': args.preload_dataset
+        'preload': args.preload_dataset,
     }
     vars(args)['dataloader_kwargs'] = {
         'drop_last': True,
