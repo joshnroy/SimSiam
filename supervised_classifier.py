@@ -120,7 +120,7 @@ def main(args):
             **args.dataset_kwargs
         ),
         batch_size=args.eval.batch_size,
-        shuffle=True,
+        shuffle=False,
         **args.dataloader_kwargs
     )
 
@@ -200,4 +200,3 @@ def main(args):
 if __name__ == "__main__":
     main(args=get_args())
     # write_images(args=get_args())
-

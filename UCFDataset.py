@@ -12,13 +12,10 @@ class UCFDataset(torchvision.datasets.UCF101):
         self.temporal_jitter_range = temporal_jitter_range
         self.img_transform = transform
 
-        # self.img_cache = {}
 
     def get_item_help(self, index):
-        # if index not in self.img_cache:
         img, _, label = super(UCFDataset, self).__getitem__(index)
         img = img[0].permute((2, 0, 1)) / 255.
-            # self.img_cache[index] = (img, label)
 
         return img, label
 
@@ -72,7 +69,6 @@ class UCFImageDataset(torchvision.datasets.ImageFolder):
     
     def __getitem__(self, index):
         img, label = self.get_item_helper(index)
-        # img = img.float() / 255.
 
         if self.img_transform is not None:
             img = self.img_transform(img)
