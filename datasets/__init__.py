@@ -2,6 +2,7 @@ import torch
 import torchvision
 from .random_dataset import RandomDataset
 from StreamDataset import StreamDataset
+from UCFDataset import UCFDataset, UCFImageDataset
 
 
 def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_subset_size=None, ordering='iid', small_dataset=False, temporal_jitter_range=0, preload=False):
@@ -20,7 +21,9 @@ def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_
     elif dataset == 'stream51':
         dataset = StreamDataset(data_dir, train=train, ordering=ordering, transform=transform, small_dataset=small_dataset, temporal_jitter_range=temporal_jitter_range, preload=preload)
     elif dataset == 'ucf101':
-        pass
+        dataset = UCFImageDataset(data_dir, train, transform, small_dataset=small_dataset, preload_dataset=preload)
+    elif dataset == 'ucf101_vid':
+        dataset = UCFDataset(data_dir, train, transform)
     else:
         raise NotImplementedError
 
