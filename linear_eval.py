@@ -26,7 +26,7 @@ def plotly_fig2array(fig):
     img = Image.open(buf).convert("RGB")
     return np.asarray(img)
 
-def main(args, train_loader=None, test_loader=None, model=None, tsne_visualization=False, test_loader2=None):
+def main(args, train_loader=None, test_loader=None, model=None, tsne_visualization=False):
 
     if train_loader is None:
         torch.manual_seed(0)
@@ -178,27 +178,7 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
     test_features = torch.cat(test_features, dim=0)
     print(f'Test Accuracy = {acc_meter.avg*100:.2f}')
 
-    if test_loader2 is not None:
-        correct, total = 0, 0
-        acc_meter.reset()
-        test2_features = []
-        for idx, x in enumerate(test_loader2):
-            images = x[0]
-            labels = x[-1]
-            with torch.no_grad():
-                assert (labels == 51).sum().item() == 0
-                feature = model(images.to(args.device))
-                test2_features.append(feature)
-                preds = classifier(feature).argmax(dim=1)
-                correct = (preds == labels.to(args.device)).sum().item()
-                acc_meter.update(correct/preds.shape[0])
-        test2_accuracy = acc_meter.avg
-        test2_features = torch.cat(test2_features, dim=0)
-        print(f'Test2 Accuracy = {acc_meter.avg*100:.2f}')
-
-        return train_accuracy, test_accuracy, train_features, test_features, test2_accuracy
-    else:
-        return train_accuracy, test_accuracy, train_features, test_features
+    return train_accuracy, test_accuracy, train_features, test_features
 
 
 
