@@ -2,7 +2,7 @@ name: simsiam-ucf101-experiment-resnet18_cifar_variant1
 dataset: 
   name: ucf101
   image_size: 32
-  num_workers: 12
+  num_workers: 64
   ordering: 'iid'
 
 model: 
@@ -39,8 +39,8 @@ eval: # linear evaluation, False will turn off automatic evaluation after traini
   num_classes: 101
 
 logger:
-  tensorboard: True
-  matplotlib: True
+  tensorboard: False
+  matplotlib: False
 
 seed: null # None type for yaml file
 # two things might lead to stochastic behavior other than seed:
