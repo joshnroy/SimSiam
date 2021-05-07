@@ -93,7 +93,8 @@ def get_args():
 
     vars(args)['aug_kwargs'] = {
         'name':args.model.name,
-        'image_size': args.resolution
+        'image_size': args.resolution,
+        'double_images': args.model.name == 'simsiam' and args.dataset.name not in ['stream51', 'ucf101', 'ucf101_vid']
     }
     vars(args)['dataset_kwargs'] = {
         'dataset':args.dataset.name,

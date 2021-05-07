@@ -145,6 +145,10 @@ def main(device, args):
     test_accuracy = 0.
     train_std = 0.
     test_std = 0.
+
+    if args.model == 'byol':
+        global_step = 0
+        max_steps = args.train.stop_at_epoch * len(train_loader)
         
     global_progress = tqdm(range(0, args.train.stop_at_epoch), desc=f'Training')
     for epoch in global_progress:
@@ -154,7 +158,13 @@ def main(device, args):
         batch_updates = 0
 
         local_progress=tqdm(train_loader, desc=f'Epoch {epoch}/{args.train.num_epochs}', disable=args.hide_progress)
-        for idx, (images1, images2, labels) in enumerate(local_progress):
+        for idx, data in enumerate(local_progress):
+            assert len(data) in [3, 2]
+            if len(data) == 3:
+                images1, images2, labels = data
+            else: #len(data) == 2
+                images1, images2 = data[0]
+                labels = data[1]
             if args.save_sample:
                 save_images(torch.cat((images1, images2), 3), labels, "iid")
                 return
@@ -167,6 +177,10 @@ def main(device, args):
             optimizer.step()
             lr_scheduler.step()
             data_dict.update({'lr':lr_scheduler.get_lr()})
+
+            if args.model == 'byol':
+                model.update_moving_average(global_step, max_steps)
+                global_step += 1
             
             local_progress.set_postfix(data_dict)
             logger.update_scalers(data_dict)

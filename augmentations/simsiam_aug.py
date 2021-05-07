@@ -9,7 +9,7 @@ imagenet_mean_std = [[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]]
 
 
 class SimSiamTransform():
-    def __init__(self, image_size, mean_std=imagenet_mean_std):
+    def __init__(self, image_size, double_images=False, mean_std=imagenet_mean_std):
         # by default simsiam use image size 224
         image_size = 224 if image_size is None else image_size
         p_blur = 0.5 if image_size > 32 else 0  # exclude cifar
@@ -28,9 +28,16 @@ class SimSiamTransform():
             T.Normalize(*mean_std)
         ])
 
+        self.double_images = double_images
+
     def __call__(self, x):
-        x = self.transform(x)
-        return x
+        if self.double_images:
+            x1 = self.transform(x)
+            x2 = self.transform(x)
+            return x1, x2
+        else:
+            x = self.transform(x)
+            return x
 
 
 def to_pil_image(pic, mode=None):
