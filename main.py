@@ -146,7 +146,7 @@ def main(device, args):
     train_std = 0.
     test_std = 0.
 
-    if args.model == 'byol':
+    if args.model.name == 'byol':
         global_step = 0
         max_steps = args.train.stop_at_epoch * len(train_loader)
         
@@ -178,8 +178,8 @@ def main(device, args):
             lr_scheduler.step()
             data_dict.update({'lr':lr_scheduler.get_lr()})
 
-            if args.model == 'byol':
-                model.update_moving_average(global_step, max_steps)
+            if args.model.name == 'byol':
+                model.module.update_moving_average(global_step, max_steps)
                 global_step += 1
             
             local_progress.set_postfix(data_dict)

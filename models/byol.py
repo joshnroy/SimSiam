@@ -12,16 +12,6 @@ HPS = dict(
     mlp_hidden_size=4096,
     projection_size=256,
     base_target_ema=4e-3,
-    optimizer_config=dict(
-        optimizer_name='lars', 
-        beta=0.9, 
-        trust_coef=1e-3, 
-        weight_decay=1.5e-6,
-        exclude_bias_from_adaption=True),
-    learning_rate_schedule=dict(
-        base_learning_rate=0.2,
-        warmup_steps=int(10.0 * 1281167 / 4096), # 10 epochs * N of steps/epoch = 10 epochs * len(dataloader)
-        anneal_schedule='cosine'),
     batchnorm_kwargs=dict(
         decay_rate=0.9,
         eps=1e-5), 
