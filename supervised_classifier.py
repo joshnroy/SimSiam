@@ -171,7 +171,7 @@ def main(args):
         loss_meter.reset()
         classifier.train()
         local_progress = tqdm(
-            train_loader, desc=f'Epoch {epoch}/{args.eval.num_epochs}', disable=True)
+            train_loader, desc=f'Epoch {epoch}/{args.eval.num_epochs}', disable=False)
 
         for idx, tup in enumerate(local_progress):
             images = tup[0]
@@ -211,7 +211,7 @@ def main(args):
         classifier, test_loader, args.device)
     print(f'Test Accuracy = {test_accuracy*100:.2f}')
 
-    return train_accuracy, test_accuracy, train_features, test_features
+    return train_accuracy, test_accuracy
 
 
 if __name__ == "__main__":
