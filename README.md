@@ -1,3 +1,10 @@
+# Sanity Check
+
+Change `CUDA_VISIBLE_DEVICES` to change the number of gpus it runs on
+
+`export CUDA_VISIBLE_DEVICES=0,1 && export WANDB_RUN_GROUP=stream51-cifar_time_jittering_deterministic0 && python main.py --config_file="configs/simsiam_stream51.yaml" --data_dir="../stream_data" --log_dir="../logs/stream51-contrastive-logs-${WANDB_RUN_GROUP}-${ID}/" --ckpt_dir=".cache/${WANDB_RUN_GROUP}" --linear_monitor --temporal_jitter_range=0 --preload_dataset --download --wandb`
+
+
 # News
 It's been two months and I think I've finally discovered the **True** reasons why Simsiam/BYOL avoids collapsed solutions using stop gradient and predictor!!! Follow me on [twitter](https://twitter.com/tianyu_hua) and stay tuned!
 
