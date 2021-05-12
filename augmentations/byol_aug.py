@@ -1,3 +1,4 @@
+import torchvision
 from torchvision import transforms
 from PIL import Image, ImageOps
 try:
@@ -49,7 +50,7 @@ class BYOL_transform:  # Table 6
 
 class Transform_single:
     def __init__(self, image_size, train, normalize=imagenet_norm):
-        self.denormalize = Denormalize(*imagenet_norm)
+        # self.denormalize = Denormalize(*imagenet_norm)
         if train == True:
             self.transform = transforms.Compose([
                 transforms.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=(

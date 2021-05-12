@@ -9,8 +9,8 @@ from collections import OrderedDict
 HPS = dict(
     max_steps=int(1000. * 1281167 / 4096), # 1000 epochs * 1281167 samples / batch size = 100 epochs * N of step/epoch
     # = total_epochs * len(dataloader) 
-    mlp_hidden_size=4096,
-    projection_size=256,
+    mlp_hidden_size=512,
+    projection_size=2048,
     base_target_ema=4e-3,
     batchnorm_kwargs=dict(
         decay_rate=0.9,
@@ -18,17 +18,6 @@ HPS = dict(
     seed=1337,
 )
 
-# def loss_fn(x, y, version='simplified'):
-    
-#     if version == 'original':
-#         y = y.detach()
-#         x = F.normalize(x, dim=-1, p=2)
-#         y = F.normalize(y, dim=-1, p=2)
-#         return (2 - 2 * (x * y).sum(dim=-1)).mean()
-#     elif version == 'simplified':
-#         return (2 - 2 * F.cosine_similarity(x,y.detach(), dim=-1)).mean()
-#     else:
-#         raise NotImplementedError
 
 from .simsiam import D  # a bit different but it's essentially the same thing: neg cosine sim & stop gradient
 
