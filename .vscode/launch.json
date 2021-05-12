@@ -52,5 +52,13 @@
             "args": ["--config_file=${workspaceFolder}/configs/simsiam_cifar.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/cifar-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--download"],
             "console": "integratedTerminal"
         },
+        {
+            "name": "Python: SimCLR CIFAR",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config_file=${workspaceFolder}/configs/simclr_cifar.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/cifar-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--download"],
+            "console": "integratedTerminal"
+        },
     ]
 }
