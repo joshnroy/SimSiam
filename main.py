@@ -215,12 +215,12 @@ def main(device, args):
             train_accuracy, test_accuracy, train_features, test_features = linear_eval(
                 args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
 
-            # cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
-            #     cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
-            cifar_train_accuracy = torch.tensor(0., device=args.device)
-            cifar_train_features = torch.tensor(0., device=args.device)
-            cifar_test_accuracy = torch.tensor(0., device=args.device)
-            cifar_test_features = torch.tensor(0., device=args.device)
+            cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
+                cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
+            # cifar_train_accuracy = torch.tensor(0., device=args.device)
+            # cifar_train_features = torch.tensor(0., device=args.device)
+            # cifar_test_accuracy = torch.tensor(0., device=args.device)
+            # cifar_test_features = torch.tensor(0., device=args.device)
 
         epoch_dict = {"Epoch": epoch, "Train Accuracy": train_accuracy, "Test Accuracy": test_accuracy, "Cifar Train Accuracy": cifar_train_accuracy, "Cifar Test Accuracy": cifar_test_accuracy,
                       "Loss": batch_loss / batch_updates, "Train Feature Standard Deviation": torch.std(train_features, dim=0).mean().item(), "Test Feature Standard Deviation": torch.std(test_features, dim=0).mean().item()}
