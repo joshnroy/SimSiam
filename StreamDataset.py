@@ -4,6 +4,7 @@ import random
 import sys
 from tqdm import trange
 from copy import deepcopy
+from multiprocessing import Pool
 
 import json
 from PIL import Image
@@ -121,7 +122,7 @@ class StreamDataset(data.Dataset):
 
         samples = make_dataset(data_list, ordering, seed=seed)
         if small_dataset:
-            samples = samples[:1000]
+            samples = samples[:10000]
 
         self.root = root
         self.loader = default_loader
@@ -140,11 +141,16 @@ class StreamDataset(data.Dataset):
         self.temporal_jitter_range = temporal_jitter_range
 
         if self.preload:
-            self.loaded_images = {}
             print("LOADING DATASET", flush=True)
-            for index in trange(len(self.samples)):
-                sample, target = self.get_item(index)
-                self.loaded_images[index] = (sample, target)
+            if False:
+                self.loaded_images = {}
+                for index in trange(len(self.samples)):
+                    sample, target = self.get_item(index)
+                    self.loaded_images[index] = (sample, target)
+            else:
+                with Pool(12) as p:
+                    self.loaded_images = p.map(self.get_item, np.arange(len(self)))
+            print("DONE LOADING", flush=True)
 
 
     def __getitem__(self, index):
