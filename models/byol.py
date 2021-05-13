@@ -10,8 +10,8 @@ HPS = dict(
     max_steps=int(1000. * 1281167 / 4096), # 1000 epochs * 1281167 samples / batch size = 100 epochs * N of step/epoch
     # = total_epochs * len(dataloader) 
     mlp_hidden_size=512,
-    projection_size=2048,
-    base_target_ema=4e-3,
+    projection_size=256,
+    base_target_ema=5e-4,
     batchnorm_kwargs=dict(
         decay_rate=0.9,
         eps=1e-5), 
@@ -61,7 +61,7 @@ class BYOL(nn.Module):
 
     @torch.no_grad()
     def update_moving_average(self, global_step, max_steps):
-        tau = self.target_ema(global_step, max_steps)
+        tau = self.target_ema(global_step, HPS['max_steps'])
         for online, target in zip(self.online_encoder.parameters(), self.target_encoder.parameters()):
             target.data = tau * target.data + (1 - tau) * online.data
             

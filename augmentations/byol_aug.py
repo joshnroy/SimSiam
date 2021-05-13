@@ -21,8 +21,7 @@ class BYOL_transform:  # Table 6
                 [transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
             # simclr paper gives the kernel size. Kernel size has to be odd positive number with torchvision
-            transforms.GaussianBlur(
-                kernel_size=image_size//20*2+1, sigma=(0.1, 2.0)),
+            # transforms.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0)),
             transforms.ToTensor(),
             transforms.Normalize(*normalize)
         ])
@@ -33,9 +32,7 @@ class BYOL_transform:  # Table 6
             transforms.RandomApply(
                 [transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
-            # transforms.RandomApply([GaussianBlur(kernel_size=int(0.1 * image_size))], p=0.1),
-            transforms.RandomApply([transforms.GaussianBlur(
-                kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=0.1),
+            # transforms.RandomApply([transforms.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=0.1),
             transforms.RandomApply([Solarization()], p=0.2),
 
             transforms.ToTensor(),
