@@ -1,6 +1,7 @@
 from .simsiam import SimSiam
 from .byol import BYOL
 from .simclr import SimCLR
+from .barlow_twins import BarlowTwins
 from torchvision.models import resnet50, resnet18
 import torch
 from .backbones import resnet18_cifar_variant1, resnet18_cifar_variant2
@@ -19,6 +20,11 @@ def get_model(model_cfg):
 
     if model_cfg.name == 'simsiam':
         model =  SimSiam(get_backbone(model_cfg.backbone))
+        if model_cfg.proj_layers is not None:
+            model.projector.set_layers(model_cfg.proj_layers)
+
+    elif model_cfg.name == 'barlow':
+        model =  BarlowTwins(get_backbone(model_cfg.backbone))
         if model_cfg.proj_layers is not None:
             model.projector.set_layers(model_cfg.proj_layers)
 

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Supervised UCF101",
+            "name": "Supervised UCF101",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/supervised_classifier.py",
@@ -13,7 +13,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: SimSiam UCF101",
+            "name": "SimSiam UCF101",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
@@ -21,7 +21,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: SimSiam Stream51",
+            "name": "SimSiam Stream51",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
@@ -29,7 +29,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: BYOL Stream51",
+            "name": "BYOL Stream51",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
@@ -37,7 +37,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: BYOL CIFAR",
+            "name": "BYOL CIFAR",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
@@ -45,7 +45,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: SimSiam CIFAR",
+            "name": "SimSiam CIFAR",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
@@ -53,11 +53,19 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: SimCLR CIFAR",
+            "name": "SimCLR CIFAR",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
             "args": ["--config_file=${workspaceFolder}/configs/simclr_cifar.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/cifar-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--download"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Barlow CIFAR",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config_file=${workspaceFolder}/configs/barlow_cifar.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/cifar-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--download", "--wandb"],
             "console": "integratedTerminal"
         },
     ]
