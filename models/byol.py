@@ -48,6 +48,10 @@ class BYOL(nn.Module):
             self.backbone,
             self.projector
         )
+        print("first#########################", flush=True)
+        print(len([x for x in self.online_encoder.parameters()]), flush=True)
+        print(len([x for x in self.backbone.parameters()]), flush=True)
+        print("first_done#########################", flush=True)
 
         self.target_encoder = copy.deepcopy(self.online_encoder)
         self.online_predictor = MLP(HPS['projection_size'])
@@ -56,8 +60,10 @@ class BYOL(nn.Module):
     def target_ema(self, k, K, base_ema=HPS['base_target_ema']):
         # tau_base = 0.996 
         # base_ema = 1 - tau_base = 0.996 
-        return 1 - base_ema * (cos(pi*k/K)+1)/2 
         # return 1 - (1-self.tau_base) * (cos(pi*k/K)+1)/2 
+
+        tau_base = 1. - base_ema
+        return 1. - (1. - tau_base) * (cos(pi*k/K)+1)/2 
 
     @torch.no_grad()
     def update_moving_average(self, global_step, max_steps):
@@ -68,6 +74,12 @@ class BYOL(nn.Module):
     def forward(self, x1, x2):
         f_o, h_o = self.online_encoder, self.online_predictor
         f_t      = self.target_encoder
+
+        # with torch.no_grad():
+        #     total_diff = 0.
+        #     for p1, p2 in zip(f_o.parameters(), f_t.parameters()):
+        #         total_diff += torch.abs(p1.data - p2.data).sum().item()
+        #     print("\n", total_diff, flush=True)
 
         z1_o = f_o(x1)
         z2_o = f_o(x2)

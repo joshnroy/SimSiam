@@ -13,6 +13,10 @@ imagenet_norm = [[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]]
 class BYOL_transform:  # Table 6
     def __init__(self, image_size, normalize=imagenet_norm):
 
+        # Exclude CIFAR
+        transform1_p_blur = 1. if image_size > 32 else 0.
+        transform2_p_blur = 0.1 if image_size > 32 else 0.
+
         self.transform1 = transforms.Compose([
             transforms.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=(
                 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC),
@@ -21,7 +25,7 @@ class BYOL_transform:  # Table 6
                 [transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
             # simclr paper gives the kernel size. Kernel size has to be odd positive number with torchvision
-            # transforms.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0)),
+            transforms.RandomApply([transforms.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=transform1_p_blur),
             transforms.ToTensor(),
             transforms.Normalize(*normalize)
         ])
@@ -32,7 +36,7 @@ class BYOL_transform:  # Table 6
             transforms.RandomApply(
                 [transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8),
             transforms.RandomGrayscale(p=0.2),
-            # transforms.RandomApply([transforms.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=0.1),
+            transforms.RandomApply([transforms.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=transform2_p_blur),
             transforms.RandomApply([Solarization()], p=0.2),
 
             transforms.ToTensor(),

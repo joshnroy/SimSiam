@@ -120,7 +120,7 @@ def main(device, args):
 
     # define model
     model = get_model(args.model).to(device)
-    model = torch.nn.DataParallel(model)
+    # model = torch.nn.DataParallel(model)
 
     # if args.wandb:
     #     wandb.watch(model)
@@ -146,9 +146,9 @@ def main(device, args):
     accuracy = 0
     # Start training
     if args.train.knn_monitor:
-        train_accuracy = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
+        train_accuracy = knn_monitor(model.backbone, memory_loader, memory_loader, device, k=min(
             args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
-        test_accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
+        test_accuracy = knn_monitor(model.backbone, memory_loader, test_loader, device, k=min(
             args.train.knn_k, len(memory_loader.dataset), hide_progress=args.hide_progress))
         print("before training (train, test) accuracy",
               train_accuracy, test_accuracy)
@@ -196,7 +196,7 @@ def main(device, args):
             data_dict.update({'lr': lr_scheduler.get_lr()})
 
             if args.model.name == 'byol':
-                model.module.update_moving_average(global_step, max_steps)
+                model.update_moving_average(global_step, max_steps)
                 global_step += 1
 
             local_progress.set_postfix(data_dict)
@@ -207,16 +207,20 @@ def main(device, args):
 
         assert args.train.knn_monitor or args.linear_monitor
         if args.train.knn_monitor and epoch % args.train.knn_interval == 0:
-            train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
+            train_accuracy, train_features = knn_monitor(model.backbone, memory_loader, memory_loader, device, k=min(
                 args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
-            test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
+            test_accuracy, test_features = knn_monitor(model.backbone, memory_loader, test_loader, device, k=min(
                 args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
         if args.linear_monitor and epoch % args.train.knn_interval == 0:
             train_accuracy, test_accuracy, train_features, test_features = linear_eval(
-                args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
+                args, train_loader=memory_loader, test_loader=test_loader, model=model.backbone)
 
-            cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
-                cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
+            # cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
+            #     cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
+            cifar_train_accuracy = torch.tensor(0., device=args.device)
+            cifar_train_features = torch.tensor(0., device=args.device)
+            cifar_test_accuracy = torch.tensor(0., device=args.device)
+            cifar_test_features = torch.tensor(0., device=args.device)
 
         epoch_dict = {"Epoch": epoch, "Train Accuracy": train_accuracy, "Test Accuracy": test_accuracy, "Cifar Train Accuracy": cifar_train_accuracy, "Cifar Test Accuracy": cifar_test_accuracy,
                       "Loss": batch_loss / batch_updates, "Train Feature Standard Deviation": torch.std(train_features, dim=0).mean().item(), "Test Feature Standard Deviation": torch.std(test_features, dim=0).mean().item()}
@@ -232,7 +236,7 @@ def main(device, args):
         args.ckpt_dir, f"{args.name}_{datetime.now().strftime('%m%d%H%M%S')}.pth")
     torch.save({
         'epoch': epoch+1,
-        'state_dict': model.module.state_dict()
+        'state_dict': model.state_dict()
     }, model_path)
     print(f"Model saved to {model_path}")
     with open(os.path.join(args.log_dir, f"checkpoint_path.txt"), 'w+') as f:
