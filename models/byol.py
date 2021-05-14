@@ -75,12 +75,13 @@ class BYOL(nn.Module):
         f_o, h_o = self.online_encoder, self.online_predictor
         f_t      = self.target_encoder
 
-        with torch.no_grad():
-            print(len([x for x in f_o.parameters()]))
-            total_diff = 0.
-            for p1, p2 in zip(f_o.parameters(), f_t.parameters()):
-                total_diff += torch.abs(p1.data - p2.data).sum().item()
-            print("\n", total_diff, flush=True)
+        # with torch.no_grad():
+        #     print("AAAAAAAAAAAAAAAAAAAAAA", flush=True)
+        #     print(len([x for x in f_o.parameters()]), flush=True)
+        #     total_diff = 0.
+        #     for p1, p2 in zip(f_o.parameters(), f_t.parameters()):
+        #         total_diff += torch.abs(p1.data - p2.data).sum().item()
+        #     print("\n", total_diff, flush=True)
 
         z1_o = f_o(x1)
         z2_o = f_o(x2)

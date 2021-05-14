@@ -197,7 +197,7 @@ def main(device, args):
             data_dict.update({'lr': lr_scheduler.get_lr()})
 
             if args.model.name == 'byol':
-                model.module.update_moving_average(global_step, max_steps)
+                # model.module.update_moving_average(global_step, max_steps)
                 global_step += 1
 
             local_progress.set_postfix(data_dict)

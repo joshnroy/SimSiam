@@ -28,6 +28,8 @@ def plotly_fig2array(fig):
 
 def main(args, train_loader=None, test_loader=None, model=None, tsne_visualization=False):
 
+    initially_none = train_loader is None
+
     if train_loader is None:
         torch.manual_seed(0)
         random.seed(0)
@@ -69,8 +71,9 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
         model = deepcopy(model)
     classifier = nn.Linear(in_features=model.output_dim, out_features=args.eval.num_classes, bias=True).to(args.device)
 
-    model = model.to(args.device)
-    model = torch.nn.DataParallel(model)
+    if initially_none:
+        model = model.to(args.device)
+        model = torch.nn.DataParallel(model)
 
     # if torch.cuda.device_count() > 1: classifier = torch.nn.SyncBatchNorm.convert_sync_batchnorm(classifier)
     classifier = torch.nn.DataParallel(classifier)
@@ -128,7 +131,6 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
         images = x[0]
         labels = x[-1]
         with torch.no_grad():
-            assert (labels == 51).sum().item() == 0
             feature = model(images.to(args.device))
             train_images.append(images)
             train_features.append(feature)
@@ -168,7 +170,6 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
         images = x[0]
         labels = x[-1]
         with torch.no_grad():
-            assert (labels == 51).sum().item() == 0
             feature = model(images.to(args.device))
             test_features.append(feature)
             preds = classifier(feature).argmax(dim=1)
