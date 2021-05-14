@@ -61,6 +61,7 @@ def get_args():
     parser.add_argument('--linear_monitor', action='store_true', default=True)
     parser.add_argument('--preload_dataset', action='store_true')
     parser.add_argument('--resolution', type=int, default=32)
+    parser.add_argument('--single_aug', type=str, help="the single augmentation to run instead of stacking them")
     args = parser.parse_args()
 
 
@@ -94,7 +95,8 @@ def get_args():
     vars(args)['aug_kwargs'] = {
         'name':args.model.name,
         'image_size': args.resolution,
-        'double_images': (args.model.name == 'simsiam' or args.model.name == 'barlow') and args.dataset.name not in ['stream51', 'ucf101', 'ucf101_vid']
+        'double_images': (args.model.name == 'simsiam' or args.model.name == 'barlow') and args.dataset.name not in ['stream51', 'ucf101', 'ucf101_vid'],
+        'single_aug': args.single_aug
     }
     vars(args)['dataset_kwargs'] = {
         'dataset':args.dataset.name,
