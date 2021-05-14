@@ -12,7 +12,7 @@ def get_aug(name='simsiam', image_size=224, train=True, train_classifier=None, d
         elif name == 'simclr':
             augmentation = SimCLRTransform(image_size)
         elif name == 'barlow':
-            augmentation = SimSiamTransform(image_size, double_images)
+            augmentation = BYOL_transform(image_size)
         else:
             raise NotImplementedError
     elif train==False:
