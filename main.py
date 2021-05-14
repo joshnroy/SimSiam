@@ -177,7 +177,8 @@ def main(device, args):
             if len(data) == 3:
                 images1, images2, labels = data
                 if type(images1) == list and len(images1) == 2 and type(images2) == list and len(images2) == 2:
-                    images1, images2 = images1
+                    images1 = images1[0]
+                    images2 = images2[1]
             else:  # len(data) == 2
                 images1, images2 = data[0]
                 labels = data[1]
