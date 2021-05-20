@@ -62,6 +62,7 @@ def get_args():
     parser.add_argument('--preload_dataset', action='store_true')
     parser.add_argument('--resolution', type=int, default=32)
     parser.add_argument('--single_aug', type=str, help="the single augmentation to run instead of stacking them")
+    parser.add_argument('--bbox_crop', action='store_true', default=False)
     args = parser.parse_args()
 
 
@@ -106,6 +107,7 @@ def get_args():
         'small_dataset': args.small_dataset,
         'temporal_jitter_range': args.temporal_jitter_range,
         'preload': args.preload_dataset,
+        'bbox_crop': args.bbox_crop,
     }
     vars(args)['dataloader_kwargs'] = {
         'drop_last': True,
