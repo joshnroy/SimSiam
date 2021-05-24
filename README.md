@@ -1,3 +1,11 @@
+# Sanity Check
+
+Change `CUDA_VISIBLE_DEVICES` to change the number of gpus it runs on
+```
+export WANDB_RUN_GROUP=fair_custer_ucf101_sanity && python main.py --config_file="configs/simsiam_ucf101.yaml" --data_dir="./ucfimages64x64" --log_dir="./logs/stream51-contrastive-logs-${WANDB_RUN_GROUP}/" --ckpt_dir=".cache/${WANDB_RUN_GROUP}" --linear_monitor --temporal_jitter_range=0 --preload_dataset --download --small_dataset
+```
+
+
 # News
 It's been two months and I think I've finally discovered the **True** reasons why Simsiam/BYOL avoids collapsed solutions using stop gradient and predictor!!! Follow me on [twitter](https://twitter.com/tianyu_hua) and stay tuned!
 

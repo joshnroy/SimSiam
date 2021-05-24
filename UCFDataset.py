@@ -1,3 +1,4 @@
+from numpy.lib.shape_base import array_split
 import torch
 import torchvision
 import os
@@ -42,7 +43,9 @@ class UCFImageDataset(torchvision.datasets.ImageFolder):
         else:
             root += '-test'
 
+        print("Starting to use Pytorch ImageFolder loader", flush=True)
         super(UCFImageDataset, self).__init__(root, transform=None)
+        print("Done using Pytorch ImageFolder loader", flush=True)
         self.img_transform = transform
         self.train = train
         self.temporal_jitter_range = temporal_jitter_range
@@ -50,8 +53,14 @@ class UCFImageDataset(torchvision.datasets.ImageFolder):
 
         self.cache = {}
         if preload_dataset:
-            for i in trange(len(self)):
-                self.cache[i] = self.get_item_helper(i)
+            print("Starting loading into memory", flush=True)
+            if False:
+                for i in trange(len(self)):
+                    self.cache[i] = self.get_item_helper(i)
+            else:
+                with Pool(64) as p:
+                    self.cache = p.map(self.get_item_helper, np.arange(len(self)))
+            print("Done loading into memory", flush=True)
 
     def get_item_helper(self, index):
         if index in self.cache:
@@ -63,7 +72,7 @@ class UCFImageDataset(torchvision.datasets.ImageFolder):
 
     def __len__(self) -> int:
         if self.small_dataset:
-            return 100000
+            return 1000
         else:
             return super(UCFImageDataset, self).__len__()
     
