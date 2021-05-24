@@ -2,7 +2,7 @@ name: simsiam-stream51-experiment-resnet18_cifar_variant1
 dataset: 
   name: stream51
   image_size: 32
-  num_workers: 9
+  num_workers: 8
   ordering: 'iid'
 
 model: 
@@ -39,8 +39,8 @@ eval: # linear evaluation, False will turn off automatic evaluation after traini
   num_classes: 51
 
 logger:
-  tensorboard: True
-  matplotlib: True
+  tensorboard: False
+  matplotlib: False
 
 seed: null # None type for yaml file
 # two things might lead to stochastic behavior other than seed:
