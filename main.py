@@ -206,30 +206,37 @@ def main(device, args):
             batch_loss += loss.item()
             batch_updates += 1
 
-        assert args.train.knn_monitor or args.linear_monitor
-        if args.train.knn_monitor and epoch % args.train.knn_interval == 0:
-            train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
-                args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
-            test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
-                args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
-        if args.linear_monitor and epoch % args.train.knn_interval == 0:
-            train_accuracy, test_accuracy, train_features, test_features = linear_eval(
-                args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
+        # assert args.train.knn_monitor or args.linear_monitor
+        # if args.train.knn_monitor and epoch % args.train.knn_interval == 0:
+        #     train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
+        #         args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
+        #     test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
+        #         args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
+        # if args.linear_monitor and epoch % args.train.knn_interval == 0:
+            # train_accuracy, test_accuracy, train_features, test_features = linear_eval(
+            #     args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
 
-            cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
-                cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
-            # cifar_train_accuracy = torch.tensor(0., device=args.device)
-            # cifar_train_features = torch.tensor(0., device=args.device)
-            # cifar_test_accuracy = torch.tensor(0., device=args.device)
-            # cifar_test_features = torch.tensor(0., device=args.device)
+            # cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
+            #     cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
 
-        epoch_dict = {"Epoch": epoch, "Train Accuracy": train_accuracy, "Test Accuracy": test_accuracy, "Cifar Train Accuracy": cifar_train_accuracy, "Cifar Test Accuracy": cifar_test_accuracy,
-                      "Loss": batch_loss / batch_updates, "Train Feature Standard Deviation": torch.std(train_features, dim=0).mean().item(), "Test Feature Standard Deviation": torch.std(test_features, dim=0).mean().item()}
+        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates}
         if args.wandb:
             wandb.log(epoch_dict)
 
         global_progress.set_postfix(epoch_dict)
         logger.update_scalers(epoch_dict)
+
+    train_accuracy, test_accuracy, train_features, test_features = linear_eval(
+        args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
+
+    cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
+        cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
+
+    epoch_dict = {"Train Accuracy": train_accuracy, "Test Accuracy": test_accuracy, "Cifar Train Accuracy": cifar_train_accuracy, "Cifar Test Accuracy": cifar_test_accuracy, "Train Feature Standard Deviation": torch.std(train_features, dim=0).mean().item(), "Test Feature Standard Deviation": torch.std(test_features, dim=0).mean().item()}
+    print("FINAL OUTPUTS", flush=True)
+    print(epoch_dict, flush=True)
+    if args.wandb:
+        wandb.log(epoch_dict)
 
     # Save checkpoint
     # datetime.now().strftime('%Y%m%d_%H%M%S')
