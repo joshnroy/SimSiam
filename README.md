@@ -2,7 +2,7 @@
 
 Change `CUDA_VISIBLE_DEVICES` to change the number of gpus it runs on
 ```
-export WANDB_RUN_GROUP=fair_custer_sanity && python main.py --config_file="configs/simsiam_stream51.yaml" --data_dir="./stream_data" --log_dir="./logs/stream51-contrastive-logs-${WANDB_RUN_GROUP}/" --ckpt_dir=".cache/${WANDB_RUN_GROUP}" --linear_monitor --temporal_jitter_range=0 --preload_dataset --download --small_dataset
+export WANDB_RUN_GROUP=fair_custer_ucf101_sanity && python main.py --config_file="configs/simsiam_ucf101.yaml" --data_dir="./ucfimages64x64" --log_dir="./logs/stream51-contrastive-logs-${WANDB_RUN_GROUP}/" --ckpt_dir=".cache/${WANDB_RUN_GROUP}" --linear_monitor --temporal_jitter_range=0 --preload_dataset --download --small_dataset
 ```
 
 
