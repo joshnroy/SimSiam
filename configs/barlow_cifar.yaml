@@ -1,12 +1,11 @@
-name: simsiam-stream51-experiment-resnet18_cifar_variant1
+name: barlow-cifar10-experiment-resnet18_cifar_variant1
 dataset: 
-  name: stream51
+  name: cifar10
   image_size: 32
   num_workers: 8
-  ordering: 'iid'
 
 model: 
-  name: simsiam
+  name: barlow
   backbone: resnet18_cifar_variant1
   proj_layers: 2
 
@@ -36,7 +35,7 @@ eval: # linear evaluation, False will turn off automatic evaluation after traini
   final_lr: 0
   batch_size: 256
   num_epochs: 100
-  num_classes: 51
+  num_classes: 10
 
 logger:
   tensorboard: False
@@ -46,6 +45,7 @@ seed: null # None type for yaml file
 # two things might lead to stochastic behavior other than seed:
 # worker_init_fn from dataloader and torch.nn.functional.interpolate 
 # (keep this in mind if you want to achieve 100% deterministic)
+
 
 
 

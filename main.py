@@ -2,7 +2,7 @@ import os
 import shutil
 import torch
 import torch.nn as nn
-import torch.nn.functional as F 
+import torch.nn.functional as F
 import torchvision
 import numpy as np
 from tqdm import tqdm
@@ -21,6 +21,7 @@ import cv2
 import imageio
 from copy import deepcopy
 
+
 def save_images(imgs, labels, name, fps=2):
     print("WRITING SAMPLE IMAGES")
     path_name = os.path.join("..", "images_" + name)
@@ -36,12 +37,13 @@ def save_images(imgs, labels, name, fps=2):
         sample -= sample.min()
         sample /= sample.max()
         sample = (sample.transpose((1, 2, 0)) * 255)
-        sample = cv2.resize(sample, (8 * sample.shape[1], 8 * sample.shape[0]), interpolation = cv2.INTER_CUBIC)
+        sample = cv2.resize(
+            sample, (8 * sample.shape[1], 8 * sample.shape[0]), interpolation=cv2.INTER_CUBIC)
 
         # Save image
         images.append(sample)
     imageio.mimwrite(os.path.join(path_name, "movie.gif"), images, fps=fps)
-    
+
 
 def main(device, args):
     cifar_args = deepcopy(args)
@@ -52,7 +54,8 @@ def main(device, args):
         print("NO AUGMENTATION IID", flush=True)
         train_loader = torch.utils.data.DataLoader(
             dataset=get_dataset(
-                transform=get_aug(train=False, train_classifier=True, **args.aug_kwargs), 
+                transform=get_aug(
+                    train=False, train_classifier=True, **args.aug_kwargs),
                 train=True,
                 **args.dataset_kwargs),
             shuffle=True,
@@ -62,7 +65,7 @@ def main(device, args):
     else:
         train_loader = torch.utils.data.DataLoader(
             dataset=get_dataset(
-                transform=get_aug(train=True, **args.aug_kwargs), 
+                transform=get_aug(train=True, **args.aug_kwargs),
                 train=True,
                 **args.dataset_kwargs),
             shuffle=True,
@@ -72,7 +75,8 @@ def main(device, args):
 
     memory_loader = torch.utils.data.DataLoader(
         dataset=get_dataset(
-            transform=get_aug(train=False, train_classifier=True, **args.aug_kwargs), 
+            transform=get_aug(
+                train=False, train_classifier=True, **args.aug_kwargs),
             train=True,
             **args.dataset_kwargs),
         shuffle=True,
@@ -81,8 +85,9 @@ def main(device, args):
     )
 
     test_loader = torch.utils.data.DataLoader(
-        dataset=get_dataset( 
-            transform=get_aug(train=False, train_classifier=False, **args.aug_kwargs), 
+        dataset=get_dataset(
+            transform=get_aug(
+                train=False, train_classifier=False, **args.aug_kwargs),
             train=False,
             **args.dataset_kwargs),
         shuffle=False,
@@ -93,7 +98,8 @@ def main(device, args):
     cifar_dataset_kwargs = cifar_args.dataloader_kwargs
     cifar_memory_loader = torch.utils.data.DataLoader(
         dataset=get_dataset(
-            transform=get_aug(train=False, train_classifier=True, **args.aug_kwargs), 
+            transform=get_aug(
+                train=False, train_classifier=True, **args.aug_kwargs),
             train=True,
             **cifar_args.dataset_kwargs),
         shuffle=True,
@@ -102,8 +108,9 @@ def main(device, args):
     )
 
     cifar_test_loader = torch.utils.data.DataLoader(
-        dataset=get_dataset( 
-            transform=get_aug(train=False, train_classifier=False, **args.aug_kwargs), 
+        dataset=get_dataset(
+            transform=get_aug(
+                train=False, train_classifier=False, **args.aug_kwargs),
             train=False,
             **cifar_args.dataset_kwargs),
         shuffle=False,
@@ -120,81 +127,124 @@ def main(device, args):
 
     # define optimizer
     optimizer = get_optimizer(
-        args.train.optimizer.name, model, 
-        lr=args.train.base_lr*args.train.batch_size/256, 
+        args.train.optimizer.name, model,
+        lr=args.train.base_lr*args.train.batch_size/256,
         momentum=args.train.optimizer.momentum,
         weight_decay=args.train.optimizer.weight_decay)
 
     lr_scheduler = LR_Scheduler(
         optimizer,
-        args.train.warmup_epochs, args.train.warmup_lr*args.train.batch_size/256, 
-        args.train.num_epochs, args.train.base_lr*args.train.batch_size/256, args.train.final_lr*args.train.batch_size/256, 
+        args.train.warmup_epochs, args.train.warmup_lr*args.train.batch_size/256,
+        args.train.num_epochs, args.train.base_lr*args.train.batch_size /
+        256, args.train.final_lr*args.train.batch_size/256,
         len(train_loader),
-        constant_predictor_lr=True # see the end of section 4.2 predictor
+        constant_predictor_lr=True  # see the end of section 4.2 predictor
     )
 
-    logger = Logger(tensorboard=args.logger.tensorboard, matplotlib=args.logger.matplotlib, log_dir=args.log_dir)
-    accuracy = 0 
+    logger = Logger(tensorboard=args.logger.tensorboard,
+                    matplotlib=args.logger.matplotlib, log_dir=args.log_dir)
+    accuracy = 0
     # Start training
-    if args.train.knn_monitor: 
-        train_accuracy = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
-        test_accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset), hide_progress=args.hide_progress))
-        print("before training (train, test) accuracy", train_accuracy, test_accuracy)
-    
+    if args.train.knn_monitor:
+        train_accuracy = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
+            args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
+        test_accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
+            args.train.knn_k, len(memory_loader.dataset), hide_progress=args.hide_progress))
+        print("before training (train, test) accuracy",
+              train_accuracy, test_accuracy)
+
     train_accuracy = 0.
     test_accuracy = 0.
     train_std = 0.
     test_std = 0.
-        
-    global_progress = tqdm(range(0, args.train.stop_at_epoch), desc=f'Training')
+
+    if args.model.name == 'byol':
+        global_step = 0
+        max_steps = args.train.stop_at_epoch * len(train_loader)
+
+    global_progress = tqdm(
+        range(0, args.train.stop_at_epoch), desc=f'Training')
     for epoch in global_progress:
         model.train()
 
         batch_loss = 0.
         batch_updates = 0
 
-        local_progress=tqdm(train_loader, desc=f'Epoch {epoch}/{args.train.num_epochs}', disable=args.hide_progress)
-        for idx, (images1, images2, labels) in enumerate(local_progress):
+        local_progress = tqdm(
+            train_loader, desc=f'Epoch {epoch}/{args.train.num_epochs}', disable=args.hide_progress)
+        for idx, data in enumerate(local_progress):
+            assert len(data) in [3, 2]
+            if len(data) == 3:
+                images1, images2, labels = data
+                if type(images1) == list and len(images1) == 2 and type(images2) == list and len(images2) == 2:
+                    images1 = images1[0]
+                    images2 = images2[1]
+            else:  # len(data) == 2
+                images1, images2 = data[0]
+                labels = data[1]
             if args.save_sample:
                 save_images(torch.cat((images1, images2), 3), labels, "iid")
                 return
 
             model.zero_grad()
-            data_dict = model.forward(images1.to(device, non_blocking=True), images2.to(device, non_blocking=True))
-            loss = data_dict['loss'].mean() # ddp
+            data_dict = model.forward(images1.to(
+                device, non_blocking=True), images2.to(device, non_blocking=True))
+            loss = data_dict['loss'].mean()  # ddp
             data_dict['loss'] = loss
             loss.backward()
             optimizer.step()
             lr_scheduler.step()
-            data_dict.update({'lr':lr_scheduler.get_lr()})
-            
+            data_dict.update({'lr': lr_scheduler.get_lr()})
+
+            if args.model.name == 'byol':
+                # model.module.update_moving_average(global_step, max_steps)
+                global_step += 1
+
             local_progress.set_postfix(data_dict)
             logger.update_scalers(data_dict)
 
             batch_loss += loss.item()
             batch_updates += 1
 
-        assert args.train.knn_monitor or args.linear_monitor
-        if args.train.knn_monitor and epoch % args.train.knn_interval == 0: 
-            train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
-            test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
-        if args.linear_monitor and epoch % args.train.knn_interval == 0:
-            train_accuracy, test_accuracy, train_features, test_features = linear_eval(args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
+        # assert args.train.knn_monitor or args.linear_monitor
+        # if args.train.knn_monitor and epoch % args.train.knn_interval == 0:
+        #     train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
+        #         args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
+        #     test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
+        #         args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
+        # if args.linear_monitor and epoch % args.train.knn_interval == 0:
+            # train_accuracy, test_accuracy, train_features, test_features = linear_eval(
+            #     args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
 
-            cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
-        
-        epoch_dict = {"Epoch": epoch, "Train Accuracy": train_accuracy, "Test Accuracy": test_accuracy, "Cifar Train Accuracy": cifar_train_accuracy, "Cifar Test Accuracy": cifar_test_accuracy, "Loss": batch_loss / batch_updates, "Train Feature Standard Deviation": torch.std(train_features, dim=0).mean().item(), "Test Feature Standard Deviation": torch.std(test_features, dim=0).mean().item()}
+            # cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
+            #     cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
+
+        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates}
         if args.wandb:
             wandb.log(epoch_dict)
 
         global_progress.set_postfix(epoch_dict)
         logger.update_scalers(epoch_dict)
-    
+
+    train_accuracy, test_accuracy, train_features, test_features = linear_eval(
+        args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
+
+    cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
+        cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
+
+    epoch_dict = {"Train Accuracy": train_accuracy, "Test Accuracy": test_accuracy, "Cifar Train Accuracy": cifar_train_accuracy, "Cifar Test Accuracy": cifar_test_accuracy, "Train Feature Standard Deviation": torch.std(train_features, dim=0).mean().item(), "Test Feature Standard Deviation": torch.std(test_features, dim=0).mean().item()}
+    print("FINAL OUTPUTS", flush=True)
+    print(epoch_dict, flush=True)
+    if args.wandb:
+        wandb.log(epoch_dict)
+
     # Save checkpoint
-    model_path = os.path.join(args.ckpt_dir, f"{args.name}_{datetime.now().strftime('%m%d%H%M%S')}.pth") # datetime.now().strftime('%Y%m%d_%H%M%S')
+    # datetime.now().strftime('%Y%m%d_%H%M%S')
+    model_path = os.path.join(
+        args.ckpt_dir, f"{args.name}_{datetime.now().strftime('%m%d%H%M%S')}.pth")
     torch.save({
         'epoch': epoch+1,
-        'state_dict':model.module.state_dict()
+        'state_dict': model.module.state_dict()
     }, model_path)
     print(f"Model saved to {model_path}")
     with open(os.path.join(args.log_dir, f"checkpoint_path.txt"), 'w+') as f:
@@ -213,9 +263,8 @@ if __name__ == "__main__":
 
     main(device=args.device, args=args)
 
-    completed_log_dir = args.log_dir.replace('in-progress', 'debug' if args.debug else 'completed')
-
-
+    completed_log_dir = args.log_dir.replace(
+        'in-progress', 'debug' if args.debug else 'completed')
 
     os.rename(args.log_dir, completed_log_dir)
     print(f'Log file has been saved to {completed_log_dir}')

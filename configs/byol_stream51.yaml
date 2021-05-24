@@ -1,27 +1,27 @@
-name: simsiam-stream51-experiment-resnet18_cifar_variant1
+name: byol-stream51-experiment-resnet18_cifar_variant1
 dataset: 
   name: stream51
   image_size: 32
-  num_workers: 8
+  num_workers: 9
   ordering: 'iid'
 
 model: 
-  name: simsiam
+  name: byol
   backbone: resnet18_cifar_variant1
   proj_layers: 2
 
 train:
   optimizer: 
-    name: sgd
-    weight_decay: 0.0005
+    name: lars_simclr
+    weight_decay: 1.5e-5
     momentum: 0.9
   warmup_epochs: 10
   warmup_lr: 0
-  base_lr: 0.03
+  base_lr: 0.3
   final_lr: 0
   num_epochs: 100 # this parameter influence the lr decay
   stop_at_epoch: 100 # has to be smaller than num_epochs
-  batch_size: 512
+  batch_size: 256
   knn_monitor: False # knn monitor will take more time
   knn_interval: 10
   knn_k: 200

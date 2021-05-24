@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Supervised UCF101",
+            "name": "Supervised UCF101",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/supervised_classifier.py",
@@ -13,7 +13,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: SimSiam UCF101",
+            "name": "SimSiam UCF101",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
@@ -21,12 +21,67 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: SimSiam Stream51",
+            "name": "SimSiam Stream51",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
             "args": ["--config_file=${workspaceFolder}/configs/simsiam_stream51.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/stream51-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug"],
             "console": "integratedTerminal"
-        }
+        },
+        {
+            "name": "BYOL Stream51",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config_file=${workspaceFolder}/configs/byol_stream51.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/stream51-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--small_dataset", "--download"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "BYOL CIFAR",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config_file=${workspaceFolder}/configs/byol_cifar.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/cifar-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--download", "--wandb"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "SimSiam CIFAR",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config_file=${workspaceFolder}/configs/simsiam_cifar.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/cifar-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--download"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "SimCLR CIFAR",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config_file=${workspaceFolder}/configs/simclr_cifar.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/cifar-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--download"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Barlow CIFAR",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config_file=${workspaceFolder}/configs/barlow_cifar.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/cifar-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--download"],
+            "console": "integratedTerminal"
+        }{
+            "name": "Barlow Stream51",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config_file=${workspaceFolder}/configs/barlow_stream51.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/stream51-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--small_dataset", "--download"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Aug Comparison: SimSiam Stream51",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--config_file=${workspaceFolder}/configs/simsiam_stream51.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/stream51-augcompare-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--small_dataset"],
+            "console": "integratedTerminal"
+        },
     ]
 }

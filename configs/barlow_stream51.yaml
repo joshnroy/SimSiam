@@ -1,4 +1,4 @@
-name: simsiam-stream51-experiment-resnet18_cifar_variant1
+name: barlow-stream51-experiment-resnet18_cifar_variant1
 dataset: 
   name: stream51
   image_size: 32
@@ -6,7 +6,7 @@ dataset:
   ordering: 'iid'
 
 model: 
-  name: simsiam
+  name: barlow
   backbone: resnet18_cifar_variant1
   proj_layers: 2
 

@@ -28,6 +28,8 @@ def plotly_fig2array(fig):
 
 def main(args, train_loader=None, test_loader=None, model=None, tsne_visualization=False):
 
+    initially_none = train_loader is None
+
     if train_loader is None:
         torch.manual_seed(0)
         random.seed(0)
@@ -69,6 +71,7 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
         model = deepcopy(model)
     classifier = nn.Linear(in_features=model.output_dim, out_features=args.eval.num_classes, bias=True).to(args.device)
 
+    # if initially_none:
     model = model.to(args.device)
     model = torch.nn.DataParallel(model)
 
@@ -106,11 +109,11 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
 
             classifier.zero_grad()
             with torch.no_grad():
-                feature = model(images.to(args.device))
+                feature = model(images.to(args.device, non_blocking=True))
 
             preds = classifier(feature)
 
-            loss = F.cross_entropy(preds, labels.to(args.device))
+            loss = F.cross_entropy(preds, labels.to(args.device, non_blocking=True))
 
             loss.backward()
             optimizer.step()
@@ -128,13 +131,12 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
         images = x[0]
         labels = x[-1]
         with torch.no_grad():
-            assert (labels == 51).sum().item() == 0
-            feature = model(images.to(args.device))
+            feature = model(images.to(args.device, non_blocking=True))
             train_images.append(images)
             train_features.append(feature)
             train_labels.append(labels)
             preds = classifier(feature).argmax(dim=1)
-            correct = (preds == labels.to(args.device)).sum().item()
+            correct = (preds == labels.to(args.device, non_blocking=True)).sum().item()
             acc_meter.update(correct/preds.shape[0])
     train_accuracy = acc_meter.avg
     train_images = torch.cat(train_images, dim=0)
@@ -168,11 +170,10 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
         images = x[0]
         labels = x[-1]
         with torch.no_grad():
-            assert (labels == 51).sum().item() == 0
-            feature = model(images.to(args.device))
+            feature = model(images.to(args.device, non_blocking=True))
             test_features.append(feature)
             preds = classifier(feature).argmax(dim=1)
-            correct = (preds == labels.to(args.device)).sum().item()
+            correct = (preds == labels.to(args.device, non_blocking=True)).sum().item()
             acc_meter.update(correct/preds.shape[0])
     test_accuracy = acc_meter.avg
     test_features = torch.cat(test_features, dim=0)

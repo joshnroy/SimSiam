@@ -9,36 +9,15 @@ from collections import OrderedDict
 HPS = dict(
     max_steps=int(1000. * 1281167 / 4096), # 1000 epochs * 1281167 samples / batch size = 100 epochs * N of step/epoch
     # = total_epochs * len(dataloader) 
-    mlp_hidden_size=4096,
+    mlp_hidden_size=512,
     projection_size=256,
-    base_target_ema=4e-3,
-    optimizer_config=dict(
-        optimizer_name='lars', 
-        beta=0.9, 
-        trust_coef=1e-3, 
-        weight_decay=1.5e-6,
-        exclude_bias_from_adaption=True),
-    learning_rate_schedule=dict(
-        base_learning_rate=0.2,
-        warmup_steps=int(10.0 * 1281167 / 4096), # 10 epochs * N of steps/epoch = 10 epochs * len(dataloader)
-        anneal_schedule='cosine'),
+    base_target_ema=5e-4,
     batchnorm_kwargs=dict(
         decay_rate=0.9,
         eps=1e-5), 
     seed=1337,
 )
 
-# def loss_fn(x, y, version='simplified'):
-    
-#     if version == 'original':
-#         y = y.detach()
-#         x = F.normalize(x, dim=-1, p=2)
-#         y = F.normalize(y, dim=-1, p=2)
-#         return (2 - 2 * (x * y).sum(dim=-1)).mean()
-#     elif version == 'simplified':
-#         return (2 - 2 * F.cosine_similarity(x,y.detach(), dim=-1)).mean()
-#     else:
-#         raise NotImplementedError
 
 from .simsiam import D  # a bit different but it's essentially the same thing: neg cosine sim & stop gradient
 
@@ -69,26 +48,40 @@ class BYOL(nn.Module):
             self.backbone,
             self.projector
         )
+        print("first#########################", flush=True)
+        print(len([x for x in self.online_encoder.parameters()]), flush=True)
+        print(len([x for x in self.backbone.parameters()]), flush=True)
+        print("first_done#########################", flush=True)
 
         self.target_encoder = copy.deepcopy(self.online_encoder)
         self.online_predictor = MLP(HPS['projection_size'])
-        raise NotImplementedError('Please put update_moving_average to training')
+        # raise NotImplementedError('Please put update_moving_average to training')
 
     def target_ema(self, k, K, base_ema=HPS['base_target_ema']):
         # tau_base = 0.996 
         # base_ema = 1 - tau_base = 0.996 
-        return 1 - base_ema * (cos(pi*k/K)+1)/2 
         # return 1 - (1-self.tau_base) * (cos(pi*k/K)+1)/2 
+
+        tau_base = 1. - base_ema
+        return 1. - (1. - tau_base) * (cos(pi*k/K)+1)/2 
 
     @torch.no_grad()
     def update_moving_average(self, global_step, max_steps):
-        tau = self.target_ema(global_step, max_steps)
+        tau = self.target_ema(global_step, HPS['max_steps'])
         for online, target in zip(self.online_encoder.parameters(), self.target_encoder.parameters()):
             target.data = tau * target.data + (1 - tau) * online.data
             
     def forward(self, x1, x2):
         f_o, h_o = self.online_encoder, self.online_predictor
         f_t      = self.target_encoder
+
+        # with torch.no_grad():
+        #     print("AAAAAAAAAAAAAAAAAAAAAA", flush=True)
+        #     print(len([x for x in f_o.parameters()]), flush=True)
+        #     total_diff = 0.
+        #     for p1, p2 in zip(f_o.parameters(), f_t.parameters()):
+        #         total_diff += torch.abs(p1.data - p2.data).sum().item()
+        #     print("\n", total_diff, flush=True)
 
         z1_o = f_o(x1)
         z2_o = f_o(x2)

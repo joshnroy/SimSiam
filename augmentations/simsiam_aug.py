@@ -9,7 +9,7 @@ imagenet_mean_std = [[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]]
 
 
 class SimSiamTransform():
-    def __init__(self, image_size, mean_std=imagenet_mean_std):
+    def __init__(self, image_size, double_images=False, single_aug=None, mean_std=imagenet_mean_std):
         # by default simsiam use image size 224
         image_size = 224 if image_size is None else image_size
         p_blur = 0.5 if image_size > 32 else 0  # exclude cifar
@@ -17,20 +17,44 @@ class SimSiamTransform():
         # the paper didn't specify this, feel free to change this value
         # I use the setting from simclr which is 50% chance applying the gaussian blur
         # the 32 is prepared for cifar training where they disabled gaussian blur
-        self.transform = T.Compose([
-            T.RandomResizedCrop(image_size, scale=(0.2, 1.0)),
-            T.RandomHorizontalFlip(),
-            T.RandomApply([T.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
-            T.RandomGrayscale(p=0.2),
-            T.RandomApply(
-                [T.GaussianBlur(kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=p_blur),
-            T.ToTensor(),
-            T.Normalize(*mean_std)
-        ])
+        resize_aug = T.Resize((image_size, image_size))
+        augs = [T.ToTensor(), T.Normalize(*mean_std)]
+        if single_aug is None:
+            augs = [T.RandomResizedCrop(image_size, scale=(0.2, 1.0)),
+                T.RandomHorizontalFlip(),
+                T.RandomApply([T.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+                T.RandomGrayscale(p=0.2),
+                T.RandomApply(
+                    [T.GaussianBlur(kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=p_blur),
+            ] + augs
+        elif single_aug == 'RandomResizedCrop':
+            augs = [resize_aug, T.RandomResizedCrop(image_size, scale=(0.2, 1.0))] + augs
+        elif single_aug == 'RandomHorizontalFlip':
+            augs = [resize_aug, T.RandomHorizontalFlip()] + augs
+        elif single_aug == 'ColorJitter':
+            augs = [resize_aug, T.RandomApply([T.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8)] + augs
+        elif single_aug == 'RandomGrayscale':
+            augs = [resize_aug, T.RandomGrayscale(p=0.2)] + augs
+        elif single_aug == 'GaussianBlur':
+            augs = [resize_aug, T.RandomApply( [T.GaussianBlur(kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=p_blur)] + augs
+        elif single_aug == 'Nothing':
+            augs = [resize_aug] + augs
+        else:
+            raise ValueError("single_aug", single_aug, " must be a SimSiam augmentation")
+
+
+        self.transform = T.Compose(augs)
+
+        self.double_images = double_images
 
     def __call__(self, x):
-        x = self.transform(x)
-        return x
+        if self.double_images:
+            x1 = self.transform(x)
+            x2 = self.transform(x)
+            return x1, x2
+        else:
+            x = self.transform(x)
+            return x
 
 
 def to_pil_image(pic, mode=None):
