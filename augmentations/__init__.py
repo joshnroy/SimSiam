@@ -8,11 +8,11 @@ def get_aug(name='simsiam', image_size=224, train=True, train_classifier=None, d
         if name == 'simsiam':
             augmentation = SimSiamTransform(image_size, double_images, single_aug)
         elif name == 'byol':
-            augmentation = BYOL_transform(image_size)
+            augmentation = BYOL_transform(image_size, single_aug=single_aug)
         elif name == 'simclr':
             augmentation = SimCLRTransform(image_size)
         elif name == 'barlow':
-            augmentation = BYOL_transform(image_size)
+            augmentation = BYOL_transform(image_size, single_aug=single_aug)
         else:
             raise NotImplementedError
     elif train==False:

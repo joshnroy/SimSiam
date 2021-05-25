@@ -1,5 +1,5 @@
 import torchvision
-from torchvision import transforms
+from torchvision import transforms as T
 from PIL import Image, ImageOps
 try:
     from torchvision.transforms import GaussianBlur
@@ -11,37 +11,62 @@ imagenet_norm = [[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]]
 
 
 class BYOL_transform:  # Table 6
-    def __init__(self, image_size, normalize=imagenet_norm):
+    def __init__(self, image_size, normalize=imagenet_norm, single_aug=None):
 
         # Exclude CIFAR
         transform1_p_blur = 1. if image_size > 32 else 0.
         transform2_p_blur = 0.1 if image_size > 32 else 0.
 
-        self.transform1 = transforms.Compose([
-            transforms.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=(
-                3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply(
-                [transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8),
-            transforms.RandomGrayscale(p=0.2),
-            # simclr paper gives the kernel size. Kernel size has to be odd positive number with torchvision
-            transforms.RandomApply([transforms.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=transform1_p_blur),
-            transforms.ToTensor(),
-            transforms.Normalize(*normalize)
-        ])
-        self.transform2 = transforms.Compose([
-            transforms.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=(
-                3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomApply(
-                [transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8),
-            transforms.RandomGrayscale(p=0.2),
-            transforms.RandomApply([transforms.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=transform2_p_blur),
-            transforms.RandomApply([Solarization()], p=0.2),
+        resize_aug = T.Resize((image_size, image_size))
+        augs = [T.ToTensor(), T.Normalize(*normalize)]
 
-            transforms.ToTensor(),
-            transforms.Normalize(*normalize)
-        ])
+        if single_aug is None:
+            augs1 = [
+                T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=(
+                    3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC),
+                T.RandomHorizontalFlip(p=0.5),
+                T.RandomApply(
+                    [T.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8),
+                T.RandomGrayscale(p=0.2),
+                T.RandomApply([T.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=transform1_p_blur),
+            ] + augs
+
+            augs2 = [
+                T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=(
+                    3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC),
+                T.RandomHorizontalFlip(p=0.5),
+                T.RandomApply(
+                    [T.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8),
+                T.RandomGrayscale(p=0.2),
+                T.RandomApply([T.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=transform2_p_blur),
+                T.RandomApply([Solarization()], p=0.2),
+            ]
+        elif single_aug == 'RandomResizedCrop':
+            augs1 = [T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
+            augs2 = [T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
+        elif single_aug == 'RandomHorizontalFlip':
+            augs1 = [resize_aug, T.RandomHorizontalFlip(p=0.5)] + augs
+            augs2 = [resize_aug, RandomHorizontalFlip(p=0.5)] + augs
+        elif single_aug == 'ColorJitter':
+            augs1 = [resize_aug, t.randomapply([t.colorjitter(0.4, 0.4, 0.2, 0.1)], p=0.8)] + augs
+            augs2 = [resize_aug, T.RandomApply([T.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8)] + augs
+        elif single_aug == 'RandomGrayscale':
+            augs1 = [resize_aug, T.RandomGrayscale(p=0.2)] + augs
+            augs2 = [resize_aug, T.RandomGrayscale(p=0.2)] + augs
+        elif single_aug == 'GaussianBlur':
+            augs1 = [resize_aug, T.RandomApply([T.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=transform1_p_blur)] + augs
+            augs2 = [resize_aug, T.RandomApply([T.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=transform2_p_blur)] + augs
+        elif single_aug == 'Solarization':
+            augs1 = [resize_aug] + augs
+            augs2 = [resize_aug, T.RandomApply([Solarization()], p=0.2)] + augs
+        elif single_aug == 'Nothing':
+            augs1 = [resize_aug] + augs
+            augs2 = [resize_aug] + augs
+        else:
+            raise ValueError("single_aug", single_aug, " must be a BYOL augmentation")
+
+        self.transform1 = T.Compose(augs1)
+        self.transform2 = T.Compose(augs2)
 
     def __call__(self, x):
         x1 = self.transform1(x)
@@ -53,20 +78,20 @@ class Transform_single:
     def __init__(self, image_size, train, normalize=imagenet_norm):
         # self.denormalize = Denormalize(*imagenet_norm)
         if train == True:
-            self.transform = transforms.Compose([
-                transforms.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=(
+            self.transform = T.Compose([
+                T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=(
                     3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                transforms.Normalize(*normalize)
+                T.RandomHorizontalFlip(),
+                T.ToTensor(),
+                T.Normalize(*normalize)
             ])
         else:
-            self.transform = transforms.Compose([
-                transforms.Resize(int(image_size*(8/7)),
+            self.transform = T.Compose([
+                T.Resize(int(image_size*(8/7)),
                                   interpolation=Image.BICUBIC),  # 224 -> 256
-                transforms.CenterCrop(image_size),
-                transforms.ToTensor(),
-                transforms.Normalize(*normalize)
+                T.CenterCrop(image_size),
+                T.ToTensor(),
+                T.Normalize(*normalize)
             ])
 
     def __call__(self, x):
