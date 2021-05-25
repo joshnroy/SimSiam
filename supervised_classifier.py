@@ -190,7 +190,7 @@ def main(args):
             lr = lr_scheduler.step()
             local_progress.set_postfix(
                 {'lr': lr, "loss": loss_meter.val, 'loss_avg': loss_meter.avg})
-        if (epoch+1) % 5 == 0:
+        if (epoch+1) % 50 == 0:
             train_accuracy, _, _ = calc_accuracy(
                 classifier, train_loader, args.device)
             test_accuracy, _, _ = calc_accuracy(
