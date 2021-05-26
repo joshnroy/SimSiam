@@ -154,7 +154,16 @@ def main(device, args):
         batch_updates = 0
 
         local_progress=tqdm(train_loader, desc=f'Epoch {epoch}/{args.train.num_epochs}', disable=args.hide_progress)
-        for idx, (images1, images2, labels) in enumerate(local_progress):
+        for idx, data in enumerate(local_progress):
+            assert len(data) in [3, 2]
+            if len(data) == 3:
+                images1, images2, labels = data
+                if type(images1) == list and len(images1) == 2 and type(images2) == list and len(images2) == 2:
+                    images1 = images1[0]
+                    images2 = images2[1]
+            else:  # len(data) == 2
+                images1, images2 = data[0]
+                labels = data[1]
             if args.save_sample:
                 save_images(torch.cat((images1, images2), 3), labels, "iid")
                 return
