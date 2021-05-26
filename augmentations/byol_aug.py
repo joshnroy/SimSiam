@@ -42,8 +42,8 @@ class BYOL_transform:  # Table 6
                 T.RandomApply([Solarization()], p=0.2),
             ]
         elif single_aug == 'RandomResizedCrop':
-            augs1 = [T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
-            augs2 = [T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
+            augs1 = [resize_aug + T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
+            augs2 = [resize_aug + T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
         elif single_aug == 'RandomHorizontalFlip':
             augs1 = [resize_aug, T.RandomHorizontalFlip(p=0.5)] + augs
             augs2 = [resize_aug, RandomHorizontalFlip(p=0.5)] + augs
