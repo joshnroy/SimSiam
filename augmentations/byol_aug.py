@@ -40,10 +40,10 @@ class BYOL_transform:  # Table 6
                 T.RandomGrayscale(p=0.2),
                 T.RandomApply([T.GaussianBlur( kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=transform2_p_blur),
                 T.RandomApply([Solarization()], p=0.2),
-            ]
+            ] + augs
         elif single_aug == 'RandomResizedCrop':
-            augs1 = [resize_aug + T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
-            augs2 = [resize_aug + T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
+            augs1 = [resize_aug, T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
+            augs2 = [resize_aug, T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
         elif single_aug == 'RandomHorizontalFlip':
             augs1 = [resize_aug, T.RandomHorizontalFlip(p=0.5)] + augs
             augs2 = [resize_aug, T.RandomHorizontalFlip(p=0.5)] + augs
