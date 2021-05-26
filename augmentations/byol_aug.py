@@ -46,9 +46,9 @@ class BYOL_transform:  # Table 6
             augs2 = [resize_aug + T.RandomResizedCrop(image_size, scale=(0.08, 1.0), ratio=( 3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC)] + augs
         elif single_aug == 'RandomHorizontalFlip':
             augs1 = [resize_aug, T.RandomHorizontalFlip(p=0.5)] + augs
-            augs2 = [resize_aug, RandomHorizontalFlip(p=0.5)] + augs
+            augs2 = [resize_aug, T.RandomHorizontalFlip(p=0.5)] + augs
         elif single_aug == 'ColorJitter':
-            augs1 = [resize_aug, t.randomapply([t.colorjitter(0.4, 0.4, 0.2, 0.1)], p=0.8)] + augs
+            augs1 = [resize_aug, T.RandomApply([T.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8)] + augs
             augs2 = [resize_aug, T.RandomApply([T.ColorJitter(0.4, 0.4, 0.2, 0.1)], p=0.8)] + augs
         elif single_aug == 'RandomGrayscale':
             augs1 = [resize_aug, T.RandomGrayscale(p=0.2)] + augs
