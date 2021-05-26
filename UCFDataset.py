@@ -54,9 +54,16 @@ class UCFImageDataset(torchvision.datasets.ImageFolder):
         self.cache = {}
         if preload_dataset:
             print("Starting loading into memory", flush=True)
-            if False:
-                for i in trange(len(self)):
-                    self.cache[i] = self.get_item_helper(i)
+            if True:
+                if self.small_dataset:
+                    idxs = np.arange(super(UCFImageDataset, self).__len__())
+                    np.random.shuffle(idxs)
+                    idxs = idxs[:len(self)]
+                    for i, original_idx in zip(np.arange(len(self)), idxs):
+                        self.cache[i] = self.get_item_helper(original_idx)
+                else:
+                    for i in trange(len(self)):
+                        self.cache[i] = self.get_item_helper(i)
             else:
                 with Pool(64) as p:
                     self.cache = p.map(self.get_item_helper, np.arange(len(self)))
@@ -67,6 +74,8 @@ class UCFImageDataset(torchvision.datasets.ImageFolder):
             img, label = self.cache[index]
         else:
             img, label = super(UCFImageDataset, self).__getitem__(index)
+            if self.small_dataset:
+                print(index, label, flush=True)
 
         return img, label
 
