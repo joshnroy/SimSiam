@@ -10,3 +10,4 @@ slurm-*
 wandb/
 .cache/
 *.mp4
+debug/
