@@ -41,7 +41,7 @@ def set_deterministic(seed):
         torch.backends.cudnn.deterministic = True 
         torch.backends.cudnn.benchmark = False 
 
-def get_args():
+def get_args(inputs=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_file', required=False, type=str, help="xxx.yaml")
     parser.add_argument('--debug', action='store_true')
@@ -63,7 +63,10 @@ def get_args():
     parser.add_argument('--resolution', type=int, default=32)
     parser.add_argument('--single_aug', type=str, help="the single augmentation to run instead of stacking them")
     parser.add_argument('--bbox_crop', action='store_true', default=False)
-    args = parser.parse_args()
+    if inputs is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(inputs)
 
 
     with open(args.config_file, 'r') as f:
