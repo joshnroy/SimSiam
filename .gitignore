@@ -12,3 +12,4 @@ wandb/
 *.mp4
 debug/
 logs/
+*.egg-info
