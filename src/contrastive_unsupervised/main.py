@@ -3,23 +3,21 @@ import shutil
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision
-import numpy as np
 from tqdm import tqdm
-from contrastive_unsupervised.arguments import get_args
-from augmentations import get_aug
-from models import get_model
-from tools import AverageMeter, knn_monitor, Logger, file_exist_check
-from datasets import get_dataset
-from optimizers import get_optimizer, LR_Scheduler
-from linear_eval import main as linear_eval
 from datetime import datetime
-import sys
 import wandb
 import pandas as pd
 import cv2
 import imageio
 from copy import deepcopy
+
+from contrastive_unsupervised.arguments import get_args
+from contrastive_unsupervised.augmentations import get_aug
+from contrastive_unsupervised.models import get_model
+from contrastive_unsupervised.tools import AverageMeter, knn_monitor, Logger, file_exist_check
+from contrastive_unsupervised.datasets import get_dataset
+from contrastive_unsupervised.optimizers import get_optimizer, LR_Scheduler
+from contrastive_unsupervised.linear_eval import main as linear_eval
 
 
 def save_images(imgs, labels, name, fps=2):
