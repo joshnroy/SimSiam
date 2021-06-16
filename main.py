@@ -169,6 +169,8 @@ def main(device, args):
 
         batch_loss = 0.
         batch_updates = 0
+        batch_var = 0.
+        batch_mean = 0.
 
         local_progress = tqdm(
             train_loader, desc=f'Epoch {epoch}/{args.train.num_epochs}', disable=args.hide_progress)
@@ -196,6 +198,12 @@ def main(device, args):
             lr_scheduler.step()
             data_dict.update({'lr': lr_scheduler.get_lr()})
 
+            batch_mean += (data_dict['feature_mean'] - batch_mean) / (batch_updates+1)
+            batch_var += (data_dict['feature_var'] - batch_mean) * (data_dict['feature_var'] - data_dict['feature_mean'])
+
+            data_dict['feature_mean'] = data_dict['feature_mean'].mean()
+            data_dict['feature_var'] = data_dict['feature_var'].mean()
+
             if args.model.name == 'byol':
                 # model.module.update_moving_average(global_step, max_steps)
                 global_step += 1
@@ -219,7 +227,7 @@ def main(device, args):
             # cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
             #     cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
 
-        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates}
+        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates, "Feature Variance": batch_var.mean().item(), "Batch Mean": batch_mean.mean().item()}
         if args.wandb:
             wandb.log(epoch_dict)
 
