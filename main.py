@@ -220,14 +220,8 @@ def main(device, args):
         #         args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
         #     test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
         #         args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
-        # if args.linear_monitor and epoch % args.train.knn_interval == 0:
-            # train_accuracy, test_accuracy, train_features, test_features = linear_eval(
-            #     args, train_loader=memory_loader, test_loader=test_loader, model=model.module.backbone)
 
-            # cifar_train_accuracy, cifar_test_accuracy, cifar_train_features, cifar_test_features = linear_eval(
-            #     cifar_args, train_loader=cifar_memory_loader, test_loader=cifar_test_loader, model=model.module.backbone)
-
-        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates, "Feature Variance": batch_var.mean().item(), "Batch Mean": batch_mean.mean().item()}
+        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates, "Feature Variance": batch_var.mean().item(), "Batch Mean": batch_mean.mean().item(), "KNN Train Accuracy": train_accuracy.mean().item(), "KNN Test Accuracy": test_accuracy.item()}
         if args.wandb:
             wandb.log(epoch_dict)
 
@@ -265,7 +259,7 @@ if __name__ == "__main__":
     if args.wandb:
         wandb_config = pd.json_normalize(vars(args), sep='_')
         wandb_config = wandb_config.to_dict(orient='records')[0]
-        wandb.init(project='simsiam', config=wandb_config)
+        wandb.init(project='simsiam', config=wandb_config, group=args.wandb_group)
 
     print("Using device", args.device)
 

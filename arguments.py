@@ -63,6 +63,7 @@ def get_args(inputs=None):
     parser.add_argument('--resolution', type=int, default=32)
     parser.add_argument('--single_aug', type=str, help="the single augmentation to run instead of stacking them")
     parser.add_argument('--bbox_crop', action='store_true', default=False)
+    parser.add_argument('--wandb_group', type=str, help="the name of the group to show up in wandb", default="")
     if inputs is None:
         args = parser.parse_args()
     else:
