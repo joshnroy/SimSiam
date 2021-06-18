@@ -221,7 +221,7 @@ def main(device, args):
         #     test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
         #         args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
 
-        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates, "Feature Variance": batch_var.mean().item(), "Batch Mean": batch_mean.mean().item(), "KNN Train Accuracy": train_accuracy.mean().item(), "KNN Test Accuracy": test_accuracy.item()}
+        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates, "Feature Variance": batch_var.mean().item(), "Batch Mean": batch_mean.mean().item()}
         if args.wandb:
             wandb.log(epoch_dict)
 
