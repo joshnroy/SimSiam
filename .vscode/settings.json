@@ -1,3 +1,4 @@
 {
     "python.linting.enabled": true,
+    "python.pythonPath": "/home/josh/miniconda3/envs/contrastive/bin/python",
 }

@@ -106,8 +106,8 @@ class SimSiam(nn.Module):
         p1, p2 = h(z1), h(z2)
         L = D(p1, z2) / 2 + D(p2, z1) / 2
 
-        feature_var = z1.var(dim=-1)
-        feature_mean = z1.mean(dim=-1)
+        feature_var = z1.var(dim=0)
+        feature_mean = z1.mean(dim=0)
 
         return {'loss': L, 'feature_var': feature_var, 'feature_mean': feature_mean}
 

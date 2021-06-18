@@ -17,7 +17,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
-            "args": ["--config_file=${workspaceFolder}/configs/simsiam_ucf101_sanity.yaml", "--data_dir=${workspaceFolder}/../ucfimages64x64", "--log_dir=${workspaceFolder}/../logs/ucf101-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--small_dataset", "--temporal_jitter_range=50"],
+            "args": ["--config_file=${workspaceFolder}/configs/simsiam_ucf101_sanity.yaml", "--data_dir=${workspaceFolder}/../ucfimages64x64", "--log_dir=${workspaceFolder}/../logs/ucf101-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--small_dataset", "--temporal_jitter_range=50", "--wandb_group=simsiam_ucf101"],
             "console": "integratedTerminal"
         },
         {
