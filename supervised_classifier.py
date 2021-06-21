@@ -107,7 +107,7 @@ def main(args):
     if args.wandb:
         wandb_config = pd.json_normalize(vars(args), sep='_')
         wandb_config = wandb_config.to_dict(orient='records')[0]
-        wandb.init(project='simsiam', config=wandb_config)
+        wandb.init(project='simsiam', config=wandb_config, group=args.wandb_group)
 
     args.dataset_kwargs['ordering'] = 'instance'
     train_aug = get_aug(train=True, train_classifier=False, **args.aug_kwargs)
@@ -190,7 +190,7 @@ def main(args):
             lr = lr_scheduler.step()
             local_progress.set_postfix(
                 {'lr': lr, "loss": loss_meter.val, 'loss_avg': loss_meter.avg})
-        if (epoch+1) % 50 == 0:
+        if (epoch+1) % 10 == 0:
             train_accuracy, _, _ = calc_accuracy(
                 classifier, train_loader, args.device)
             test_accuracy, _, _ = calc_accuracy(

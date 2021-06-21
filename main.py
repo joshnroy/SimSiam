@@ -146,17 +146,17 @@ def main(device, args):
     accuracy = 0
     # Start training
     if args.train.knn_monitor:
-        train_accuracy = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
+        train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
             args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
-        test_accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
-            args.train.knn_k, len(memory_loader.dataset), hide_progress=args.hide_progress))
+        test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
+            args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
         print("before training (train, test) accuracy",
               train_accuracy, test_accuracy)
 
     train_accuracy = 0.
     test_accuracy = 0.
-    train_std = 0.
-    test_std = 0.
+    train_var = torch.var(train_features, dim=0).mean().item()
+    test_var = torch.var(test_features, dim=0).mean().item()
 
     if args.model.name == 'byol':
         global_step = 0
@@ -214,14 +214,16 @@ def main(device, args):
             batch_loss += loss.item()
             batch_updates += 1
 
-        # assert args.train.knn_monitor or args.linear_monitor
-        # if args.train.knn_monitor and epoch % args.train.knn_interval == 0:
-        #     train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
-        #         args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
-        #     test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
-        #         args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
+        assert args.train.knn_monitor or args.linear_monitor
+        if args.train.knn_monitor and epoch % args.train.knn_interval == 0:
+            train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
+                args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
+            test_accuracy, test_features = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(
+                args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
+            train_var = torch.var(train_features, dim=0).mean().item()
+            test_var = torch.var(test_features, dim=0).mean().item()
 
-        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates, "Feature Variance": batch_var.mean().item(), "Batch Mean": batch_mean.mean().item()}
+        epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates, "Train Feature Variance": train_var, "Test Feature Variance": test_var}
         if args.wandb:
             wandb.log(epoch_dict)
 

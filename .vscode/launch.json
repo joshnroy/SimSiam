@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/supervised_classifier.py",
-            "args": ["--config_file=${workspaceFolder}/configs/simsiam_ucf101.yaml", "--data_dir=${workspaceFolder}/../ucfimages64x64", "--log_dir=${workspaceFolder}/../logs/ucf101-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--small_dataset", "--preload_dataset"],
+            "args": ["--config_file=${workspaceFolder}/configs/simsiam_ucf101.yaml", "--data_dir=${workspaceFolder}/../ucfimages64x64", "--log_dir=${workspaceFolder}/../logs/ucf101-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--small_dataset", "--preload_dataset", "--wandb_group=supervised_ucf101_small"],
             "console": "integratedTerminal"
         },
         {
@@ -17,7 +17,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
-            "args": ["--config_file=${workspaceFolder}/configs/simsiam_ucf101_sanity.yaml", "--data_dir=${workspaceFolder}/../ucfimages64x64", "--log_dir=${workspaceFolder}/../logs/ucf101-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--small_dataset", "--temporal_jitter_range=50", "--wandb_group=simsiam_ucf101"],
+            "args": ["--config_file=${workspaceFolder}/configs/simsiam_ucf101_sanity.yaml", "--data_dir=${workspaceFolder}/../ucfimages64x64", "--log_dir=${workspaceFolder}/../logs/ucf101-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--small_dataset", "--temporal_jitter_range=50", "--wandb_group=simsiam_ucf101_smalldataset"],
             "console": "integratedTerminal"
         },
         {
@@ -33,7 +33,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
-            "args": ["--config_file=${workspaceFolder}/configs/simsiam_stream51.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/stream51-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug"],
+            "args": ["--config_file=${workspaceFolder}/configs/simsiam_stream51.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/stream51-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--small_dataset", "--preload_dataset"],
             "console": "integratedTerminal"
         },
         {
