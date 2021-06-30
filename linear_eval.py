@@ -127,7 +127,7 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
     train_features = []
     train_labels = []
     train_images = []
-    for idx, x in enumerate(train_loader):
+    for idx, x in tqdm(enumerate(train_loader), total=len(train_loader)):
         images = x[0]
         labels = x[-1]
         with torch.no_grad():
@@ -186,5 +186,5 @@ def main(args, train_loader=None, test_loader=None, model=None, tsne_visualizati
 
 
 if __name__ == "__main__":
-    main(args=get_args(), tsne_visualization=False)
+    main(args=get_args(), tsne_visualization=True)
 

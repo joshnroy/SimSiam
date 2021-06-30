@@ -14,7 +14,7 @@ def knn_monitor(net, memory_data_loader, test_data_loader, epoch, k=200, t=0.1, 
             label = memory[-1]
             feature = net(data.cuda(non_blocking=True))
             feature = F.normalize(feature, dim=1)
-            feature_bank.append(feature)
+            feature_bank.append(feature.cpu())
         # [D, N]
         feature_bank = torch.cat(feature_bank, dim=0).t().contiguous()
         # [N]
@@ -28,9 +28,10 @@ def knn_monitor(net, memory_data_loader, test_data_loader, epoch, k=200, t=0.1, 
             data, target = data.cuda(non_blocking=True), target.cuda(non_blocking=True)
             feature = net(data)
             feature = F.normalize(feature, dim=1)
-            test_feature_bank.append(feature)
+            test_feature_bank.append(feature.cpu())
+            target = target.cpu()
             
-            pred_labels = knn_predict(feature, feature_bank, feature_labels, classes, k, t)
+            pred_labels = knn_predict(feature.cpu(), feature_bank, feature_labels, classes, k, t)
 
             total_num += data.size(0)
             total_top1 += (pred_labels[:, 0] == target).float().sum().item()
@@ -39,9 +40,25 @@ def knn_monitor(net, memory_data_loader, test_data_loader, epoch, k=200, t=0.1, 
         test_feature_bank = torch.cat(test_feature_bank, dim=0).contiguous()
     return total_top1 / total_num * 100, test_feature_bank
 
+def get_feature_var(net, test_data_loader, hide_progress=False):
+    net.eval()
+    feature_bank = []
+    with torch.no_grad():
+        # generate feature bank
+        for memory in tqdm(test_data_loader, desc='Feature extracting', leave=False, disable=hide_progress):
+            data = memory[0]
+            feature = net(data.cuda(non_blocking=True))
+            feature_bank.append(feature.cpu())
+        # [D, N]
+        feature_bank = torch.cat(feature_bank, dim=0).t().contiguous()
+    return torch.var(feature_bank, dim=0).mean().item()
+
 # knn monitor as in InstDisc https://arxiv.org/abs/1805.01978
 # implementation follows http://github.com/zhirongw/lemniscate.pytorch and https://github.com/leftthomas/SimCLR
 def knn_predict(feature, feature_bank, feature_labels, classes, knn_k, knn_t):
+    feature = feature.cpu()
+    feature_bank = feature_bank.cpu()
+    feature_labels = feature_labels.cpu()
     # compute cos similarity between each feature vector and feature bank ---> [B, N]
     sim_matrix = torch.mm(feature, feature_bank)
     # [B, K]

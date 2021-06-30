@@ -9,7 +9,7 @@ from tqdm import tqdm
 from arguments import get_args
 from augmentations import get_aug
 from models import get_model
-from tools import AverageMeter, knn_monitor, Logger, file_exist_check
+from tools import AverageMeter, knn_monitor, Logger, file_exist_check, get_feature_var
 from datasets import get_dataset
 from optimizers import get_optimizer, LR_Scheduler
 from linear_eval import main as linear_eval
@@ -74,14 +74,13 @@ def main(device, args):
         )
 
     memory_loader = torch.utils.data.DataLoader(
-        dataset=get_dataset(
-            transform=get_aug(
-                train=False, train_classifier=True, **args.aug_kwargs),
-            train=True,
-            **args.dataset_kwargs),
-        shuffle=True,
-        batch_size=args.train.batch_size,
-        **args.dataloader_kwargs
+	dataset=get_dataset(
+	    transform=get_aug(train=True, **args.aug_kwargs),
+	    train=True,
+	    **args.dataset_kwargs),
+	shuffle=True,
+	batch_size=args.train.batch_size,
+	**args.dataloader_kwargs
     )
 
     test_loader = torch.utils.data.DataLoader(
@@ -155,8 +154,8 @@ def main(device, args):
 
     train_accuracy = 0.
     test_accuracy = 0.
-    train_var = torch.var(train_features, dim=0).mean().item()
-    test_var = torch.var(test_features, dim=0).mean().item()
+    train_var = get_feature_var(model.module.backbone, memory_loader)
+    test_var = get_feature_var(model.module.backbone, test_loader)
 
     if args.model.name == 'byol':
         global_step = 0
@@ -214,7 +213,6 @@ def main(device, args):
             batch_loss += loss.item()
             batch_updates += 1
 
-        assert args.train.knn_monitor or args.linear_monitor
         if args.train.knn_monitor and epoch % args.train.knn_interval == 0:
             train_accuracy, train_features = knn_monitor(model.module.backbone, memory_loader, memory_loader, device, k=min(
                 args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
@@ -222,6 +220,21 @@ def main(device, args):
                 args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
             train_var = torch.var(train_features, dim=0).mean().item()
             test_var = torch.var(test_features, dim=0).mean().item()
+
+        if epoch % args.train.knn_interval == 0:
+            train_var = get_feature_var(model.module.backbone, memory_loader)
+            test_var = get_feature_var(model.module.backbone, test_loader)
+
+            model_path = os.path.join(
+        	args.ckpt_dir, f"{args.name}_{datetime.now().strftime('%m%d%H%M%S')}.pth")
+            torch.save({
+        	'epoch': epoch+1,
+        	'state_dict': model.module.state_dict()
+            }, model_path)
+            print(f"Model saved to {model_path}")
+            with open(os.path.join(args.log_dir, f"checkpoint_path.txt"), 'w+') as f:
+                f.write(f'{model_path}')
+
 
         epoch_dict = {"Epoch": epoch, "Loss": batch_loss / batch_updates, "Train Feature Variance": train_var, "Test Feature Variance": test_var}
         if args.wandb:

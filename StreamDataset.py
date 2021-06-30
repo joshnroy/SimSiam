@@ -122,7 +122,7 @@ class StreamDataset(data.Dataset):
 
         samples = make_dataset(data_list, ordering, seed=seed)
         if small_dataset:
-            samples = samples[:10000]
+            samples = samples[:1000]
 
         self.root = root
         self.loader = default_loader
