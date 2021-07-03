@@ -51,7 +51,7 @@ def get_feature_var(net, test_data_loader, hide_progress=False):
             feature_bank.append(feature.cpu())
         # [D, N]
         feature_bank = torch.cat(feature_bank, dim=0).t().contiguous()
-    return torch.var(feature_bank, dim=0).mean().item()
+    return torch.linalg.norm(torch.var(feature_bank, dim=0), dim=0).item()
 
 # knn monitor as in InstDisc https://arxiv.org/abs/1805.01978
 # implementation follows http://github.com/zhirongw/lemniscate.pytorch and https://github.com/leftthomas/SimCLR

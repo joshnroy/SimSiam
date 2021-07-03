@@ -13,7 +13,7 @@
 #SBATCH -c 8
 #
 # Array
-#SBATCH --array=2-2
+#SBATCH --array=1-1
 
 ID=$(($SLURM_ARRAY_TASK_ID))
 
@@ -22,9 +22,9 @@ aug=${augs[ID-1]}
 
 if [ $ID -eq 1 ]
 then
-    exp_type="simsiam_stream51-cifar_time_jittering_deterministic50_staticaugs"
-    source ~/miniconda3/bin/activate && conda activate simsiam && python3 main.py --config_file="configs/simsiam_stream51.yaml" --data_dir="/users/jroy1/data/jroy1/contrastive/stream_data" --log_dir="../logs/contrastive-logs-${exp_type}-${ID}/" --ckpt_dir=".cache/${exp_type}/" --linear_monitor --temporal_jitter_range=50 --download --wandb --preload_dataset --wandb_group=${exp_type}
+    exp_type="simsiam_stream51-cifar_time_jittering_deterministic0_staticaugs"
+    source ~/miniconda3/bin/activate && conda activate simsiam && python3 main.py --config_file="configs/simsiam_stream51.yaml" --data_dir="/users/jroy1/data/jroy1/contrastive/stream_data" --log_dir="../logs/contrastive-logs-${exp_type}-${ID}/" --ckpt_dir=".cache/${exp_type}/" --linear_monitor --temporal_jitter_range=0 --download --wandb --preload_dataset --wandb_group=${exp_type}
 else
-    exp_type="simsiam_ucf101-cifar_time_jittering_deterministic50_staticaugs"
-    source ~/miniconda3/bin/activate && conda activate simsiam && python3 main.py --config_file="configs/simsiam_ucf101.yaml" --data_dir="/users/jroy1/data/jroy1/contrastive/ucfimages64x64" --log_dir="../logs/contrastive-logs-${exp_type}-${ID}/" --ckpt_dir=".cache/${exp_type}/" --linear_monitor --temporal_jitter_range=50 --download --wandb --wandb_group=${exp_type}
+    exp_type="simsiam_ucf101-cifar_time_jittering_deterministic0_staticaugs"
+    source ~/miniconda3/bin/activate && conda activate simsiam && python3 main.py --config_file="configs/simsiam_ucf101.yaml" --data_dir="/users/jroy1/data/jroy1/contrastive/ucfimages64x64" --log_dir="../logs/contrastive-logs-${exp_type}-${ID}/" --ckpt_dir=".cache/${exp_type}/" --linear_monitor --temporal_jitter_range=0 --download --wandb --wandb_group=${exp_type}
 fi
