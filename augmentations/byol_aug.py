@@ -11,14 +11,14 @@ imagenet_norm = [[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]]
 
 
 class BYOL_transform:  # Table 6
-    def __init__(self, image_size, normalize=imagenet_norm, single_aug=None):
+    def __init__(self, image_size, mean_std=imagenet_norm, single_aug=None):
 
         # Exclude CIFAR
         transform1_p_blur = 1. if image_size > 32 else 0.
         transform2_p_blur = 0.1 if image_size > 32 else 0.
 
         resize_aug = T.Resize((image_size, image_size))
-        augs = [T.ToTensor(), T.Normalize(*normalize)]
+        augs = [T.ToTensor(), T.Normalize(*mean_std)]
 
         if single_aug is None:
             augs1 = [
@@ -75,7 +75,7 @@ class BYOL_transform:  # Table 6
 
 
 class Transform_single:
-    def __init__(self, image_size, train, normalize=imagenet_norm):
+    def __init__(self, image_size, train, mean_std=imagenet_norm):
         # self.denormalize = Denormalize(*imagenet_norm)
         if train == True:
             self.transform = T.Compose([
@@ -83,7 +83,7 @@ class Transform_single:
                     3.0/4.0, 4.0/3.0), interpolation=Image.BICUBIC),
                 T.RandomHorizontalFlip(),
                 T.ToTensor(),
-                T.Normalize(*normalize)
+                T.Normalize(*mean_std)
             ])
         else:
             self.transform = T.Compose([
@@ -91,7 +91,7 @@ class Transform_single:
                                   interpolation=Image.BICUBIC),  # 224 -> 256
                 T.CenterCrop(image_size),
                 T.ToTensor(),
-                T.Normalize(*normalize)
+                T.Normalize(*mean_std)
             ])
 
     def __call__(self, x):

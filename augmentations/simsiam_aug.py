@@ -19,6 +19,7 @@ class SimSiamTransform():
         # the 32 is prepared for cifar training where they disabled gaussian blur
         resize_aug = T.Resize((image_size, image_size))
         augs = [T.ToTensor(), T.Normalize(*mean_std)]
+        # augs = [T.ToTensor()]
         if single_aug is None:
             augs = [T.RandomResizedCrop(image_size, scale=(0.2, 1.0)),
                 T.RandomHorizontalFlip(),
