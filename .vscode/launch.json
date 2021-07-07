@@ -96,7 +96,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/mean_var_calculator.py",
-            "args": ["--config_file=${workspaceFolder}/configs/simsiam_stream51.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/stream51-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--wandb_group=mean_std_stream51_small", "--single_aug=Nothing"],
+            "args": ["--config_file=${workspaceFolder}/configs/simsiam_stream51.yaml", "--data_dir=${workspaceFolder}/../stream_data", "--log_dir=${workspaceFolder}/../logs/stream51-supervised-logs-${WANDB_RUN_GROUP}-${ID}/", "--ckpt_dir=${workspaceFolder}/.cache/debug", "--preload_dataset", "--wandb_group=mean_std_stream51_small", "--single_aug=Nothing", "--small_dataset"],
             "console": "integratedTerminal"
         },
     ]
